@@ -413,7 +413,7 @@
     <div id="admin-auth-barrier" class="admin-lock-box">
       <h3 style="font-family: 'Orbitron'; margin-bottom: 10px; color: var(--red);">🔒 Admin Verifizierung</h3>
       <p style="color: var(--text2); font-size: 12px; margin-bottom: 20px;">Bitte gib deine E-Mail-Adresse ein, um Zugriff auf die Verwaltungsoptionen zu erhalten.</p>
-      <input type="email" id="admin-auth-email" placeholder="admin@liga.de" style="margin-bottom: 15px;">
+      <input type="email" id="admin-auth-email" placeholder="leagueaustrianracing@gmail.com" style="margin-bottom: 15px;">
       <button class="btn btn-red" style="width:100%" onclick="checkAdminAuth()">Zugang prüfen</button>
       <p id="admin-auth-error" style="color: var(--red); font-size:12px; margin-top:10px; display:none;">Keine Admin-Rechte für diese E-Mail.</p>
     </div>
@@ -539,7 +539,15 @@
   const db = getFirestore(app);
 
   // ZUGANGSLISTE FÜR ADMINS
-  const ALLOWED_ADMIN_EMAILS = ["admin@liga.de", "leitung@earl.at", "test@test.de"];
+  const ALLOWED_ADMIN_EMAILS = ["leagueaustrianracing@gmail.com"];
+
+  // Variablen für die Statistiken deklarieren
+  const statTotalTeams = document.getElementById("stat-total-teams");
+  const statFreeTeams = document.getElementById("stat-free-teams");
+  const statPendingDrivers = document.getElementById("stat-pending-drivers");
+  const statActiveDrivers = document.getElementById("stat-active-drivers");
+  const statSubDrivers = document.getElementById("stat-sub-drivers");
+  const statFullTeams = document.getElementById("stat-full-teams");
 
   window.checkAdminAuth = function() {
     const inputEmail = document.getElementById("admin-auth-email").value.trim().toLowerCase();
@@ -757,7 +765,6 @@
   }
 
   function renderAdminTables(pending, allDrivers) {
-    // 1. ANFRAGEN
     const tReq = document.getElementById("table-requests");
     if(pending.length === 0) {
       tReq.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text3);">Keine offenen Lizenzen zu prüfen.</td></tr>`;
@@ -777,7 +784,6 @@
         </tr>`).join('');
     }
 
-    // 2. ALLE FAHRER
     document.getElementById("table-all-drivers").innerHTML = allDrivers.map(d => `
       <tr>
         <td class="td-name">${d.realName}</td>
@@ -789,7 +795,6 @@
         <td><button class="btn btn-outline btn-sm" onclick="editDriverInline('${d.id}')">✏️ Edit</button></td>
       </tr>`).join('');
 
-    // 3. TEAMS ADMIN
     document.getElementById("table-admin-teams").innerHTML = Object.keys(localTeamsMap).map(id => {
       const t = localTeamsMap[id];
       return `
@@ -804,10 +809,10 @@
   }
 
   function updateDashboardStats(pending, active) {
-    statTotalTeams.textContent = Object.keys(localTeamsMap).length;
-    statPendingDrivers.textContent = pending.length;
-    statActiveDrivers.textContent = active.filter(f => f.role === "Stammfahrer").length;
-    statSubDrivers.textContent = active.filter(f => f.role === "Ersatzfahrer").length;
+    if(statTotalTeams) statTotalTeams.textContent = Object.keys(localTeamsMap).length;
+    if(statPendingDrivers) statPendingDrivers.textContent = pending.length;
+    if(statActiveDrivers) statActiveDrivers.textContent = active.filter(f => f.role === "Stammfahrer").length;
+    if(statSubDrivers) statSubDrivers.textContent = active.filter(f => f.role === "Ersatzfahrer").length;
 
     let fullTeams = 0, freeSlots = 0;
     Object.keys(localTeamsMap).forEach(id => {
@@ -818,11 +823,10 @@
       if(team.status === "Voll" || occupied >= 2) fullTeams++;
       freeSlots += (2 - occupied);
     });
-    statFullTeams.textContent = fullTeams;
-    statFreeTeams.textContent = freeSlots < 0 ? 0 : freeSlots;
+    if(statFullTeams) statFullTeams.textContent = fullTeams;
+    if(statFreeTeams) statFreeTeams.textContent = freeSlots < 0 ? 0 : freeSlots;
   }
 
-  // LOG-HELPER
   async function createAdminLog(message, driverId = null, teamId = null) {
     try {
       await addDoc(collection(db, "admin_logs"), { message, driverId, teamId, timestamp: new Date() });
