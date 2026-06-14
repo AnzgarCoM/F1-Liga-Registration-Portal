@@ -293,10 +293,8 @@
   .driver-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
   .driver-team { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
  
-  /* Team specific badge colors simulation */
   .tc-default { background: #444; color: #fff; }
 
-  /* Responsive */
   @media (max-width: 768px) {
     .teams-grid { grid-template-columns: 1fr; }
     .drivers-grid { grid-template-columns: 1fr 1fr; }
@@ -516,10 +514,8 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
   import { getFirestore, collection, getDocs, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Deine exakten Live-Verbindungsdaten
   const firebaseConfig = {
     apiKey: "AIzaSyBAO3bYedGDFXfuNObINfhOBZXgBdpHZYo",
     authDomain: "elite-austrian-racing-league.firebaseapp.com",
@@ -530,12 +526,9 @@
     measurementId: "G-C9D2VMWT3W"
   };
 
-  // Initialisierung
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const db = getFirestore(app);
 
-  // Globale Navigation (Verfügbar machen)
   window.showPage = function(pageId, element) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
@@ -548,14 +541,12 @@
     window.scrollTo(0,0);
   };
 
-  // HTML Elemente cachen
   const regTeamDropdown = document.getElementById("reg-team");
   const dashTeamsGrid = document.getElementById("dash-teams");
   const teamsDisplayGrid = document.getElementById("teams-display-grid");
   const driversDisplayGrid = document.getElementById("drivers-display-grid");
   const adminRequestsTable = document.getElementById("admin-requests-table");
 
-  // Stat-Zähler Elemente
   const statTotalTeams = document.getElementById("stat-total-teams");
   const statFreeTeams = document.getElementById("stat-free-teams");
   const statPendingDrivers = document.getElementById("stat-pending-drivers");
@@ -565,11 +556,6 @@
 
   let localTeamsMap = {};
 
-  // ==========================================
-  // REALTIME-LISTENER: TEAMS & DRIVERS DATA
-  // ==========================================
-  
-  // 1. Teams laden & Map aufbauen
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (teamsSnapshot) => {
       localTeamsMap = {};
@@ -579,28 +565,24 @@
         const data = doc.data();
         localTeamsMap[doc.id] = data.name || doc.id;
         
-        // Fülle Registrierungs-Dropdown
         const opt = document.createElement("option");
         opt.value = doc.id;
         opt.textContent = data.name || doc.id;
         regTeamDropdown.appendChild(opt);
       });
 
-      // Sobald Teams bekannt sind, hänge den Fahrer-Listener ein
       syncDriversAndRender();
     }, (error) => {
-      console.error("Berechtigungsfehler bei Teams-Abfrage: ", error);
+      console.error("Fehler bei Teams-Abfrage: ", error);
     });
   }
 
-  // 2. Fahrer abfragen, Ansichten bauen und Stats berechnen
   function syncDriversAndRender() {
     onSnapshot(collection(db, "fahrer"), (driverSnapshot) => {
       let pendingDriversList = [];
       let activeDriversList = [];
       let teamOccupancy = {};
 
-      // Initialisiere Belegung für jedes geladene Team
       Object.keys(localTeamsMap).forEach(id => {
         teamOccupancy[id] = [];
       });
@@ -619,18 +601,16 @@
         }
       });
 
-      // Render Dashboard & Team Übersicht
       renderTeamsUI(teamOccupancy);
       renderDriversUI(activeDriversList);
       renderAdminTable(pendingDriversList);
       updateDashboardStats(pendingDriversList, activeDriversList, teamOccupancy);
 
     }, (error) => {
-      console.error("Berechtigungsfehler bei Fahrer-Abfrage: ", error);
+      console.error("Fehler bei Fahrer-Abfrage (Collection existiert evtl. noch nicht): ", error);
     });
   }
 
-  // UI-Renderer: Teams Grids
   function renderTeamsUI(occupancy) {
     let html = "";
     Object.keys(localTeamsMap).forEach(teamId => {
@@ -657,7 +637,6 @@
     if(teamsDisplayGrid) teamsDisplayGrid.innerHTML = html;
   }
 
-  // UI-Renderer: Bestätigte Fahrer-Karten
   function renderDriversUI(activeDrivers) {
     if(!driversDisplayGrid) return;
     if(activeDrivers.length === 0) {
@@ -675,7 +654,6 @@
     `).join('');
   }
 
-  // UI-Renderer: Admin-Freischaltungs-Tabelle
   function renderAdminTable(pendingDrivers) {
     if(pendingDrivers.length === 0) {
       adminRequestsTable.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text3);">Keine offenen Lizenzen zu prüfen.</td></tr>`;
@@ -690,20 +668,18 @@
         <td>${localTeamsMap[d.team] || d.team}</td>
         <td style="text-transform: uppercase; font-size: 11px; color: var(--yellow);">${d.rolle || 'Stamm'}</td>
         <td class="td-actions">
-          <button class="btn btn-green btn-sm" data-id="${d.id}" id="approve-${d.id}">Annehmen</button>
-          <button class="btn btn-outline btn-sm" data-id="${d.id}" id="reject-${d.id}" style="color: var(--red); border-color: var(--red-dim);">Löschen</button>
+          <button class="btn btn-green btn-sm" id="approve-${d.id}">Annehmen</button>
+          <button class="btn btn-outline btn-sm" id="reject-${d.id}" style="color: var(--red); border-color: var(--red-dim);">Löschen</button>
         </td>
       </tr>
     `).join('');
 
-    // Click Events via JS binden
     pendingDrivers.forEach(d => {
       document.getElementById(`approve-${d.id}`).addEventListener('click', () => updateDriverStatus(d.id, "bestätigt"));
       document.getElementById(`reject-${d.id}`).addEventListener('click', () => deleteDriverRecord(d.id));
     });
   }
 
-  // Dashboard Zähler berechnen
   function updateDashboardStats(pending, active, occupancy) {
     const totalTeamsCount = Object.keys(localTeamsMap).length;
     statTotalTeams.textContent = totalTeamsCount;
@@ -722,16 +698,13 @@
     statFreeTeams.textContent = freeSlots;
   }
 
-  // ==========================================
-  // ACTIONS: STATUS ÄNDERN & FORMULAR EINREICHEN
-  // ==========================================
-
   async function updateDriverStatus(id, newStatus) {
     try {
       await updateDoc(doc(db, "fahrer", id), { status: newStatus });
       alert("Fahrerlizenz erfolgreich freigeschaltet!");
     } catch (e) {
-      alert("Fehler bei Rechteprüfung! Firestore Rules blockieren den Zugriff.");
+      console.error(e);
+      alert("Fehler bei Rechteprüfung! Bitte Firestore Rules prüfen.");
     }
   }
 
@@ -740,12 +713,12 @@
       try {
         await deleteDoc(doc(db, "fahrer", id));
       } catch (e) {
+        console.error(e);
         alert("Löschen fehlgeschlagen.");
       }
     }
   }
 
-  // Absenden des Anmeldeformulars abfangen
   document.getElementById("submit-reg-btn").addEventListener("click", async () => {
     const form = document.getElementById("main-reg-form");
     if(!form.checkValidity()) {
@@ -769,6 +742,7 @@
     successDiv.style.display = "none";
 
     try {
+      // WICHTIG: Hier übergeben wir ein flaches, sauberes Schlüssel-Wert-Objekt!
       await addDoc(collection(db, "fahrer"), {
         fahrername: name,
         discord: discord,
@@ -786,13 +760,12 @@
       form.reset();
       window.scrollTo(0, 0);
     } catch (error) {
-      console.error(error);
-      errorDiv.textContent = "Firestore-Schreibfehler: Bitte überprüfe deine Collection-Regeln im Firebase Dashboard.";
+      console.error("Ausführlicher Firebase Fehler:", error);
+      errorDiv.textContent = `Fehler: ${error.code || error.message || error}. Bitte passe die Firebase Regeln (Rules) im Dashboard an.`;
       errorDiv.style.display = "block";
     }
   });
 
-  // Start
   initLiveSystem();
 </script>
 </body>
