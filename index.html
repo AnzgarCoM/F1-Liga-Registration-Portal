@@ -379,27 +379,27 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Fahrername / Echter Name *</label>
-            <input type="text" id="reg-name" placeholder="Max Mustermann" required>
+            <input type="text" id="reg-name" placeholder="Max Mustermann">
           </div>
           <div class="form-group">
             <label>Discordname *</label>
-            <input type="text" id="reg-discord" placeholder="username#1234" required>
+            <input type="text" id="reg-discord" placeholder="username#1234">
           </div>
           <div class="form-group">
             <label>Fahrernummer (1–99) *</label>
-            <input type="number" id="reg-number" placeholder="z.B. 44" min="1" max="99" required>
+            <input type="number" id="reg-number" placeholder="z.B. 44" min="1" max="99">
           </div>
           <div class="form-group">
             <label>Rolle *</label>
-            <select id="reg-role" required>
+            <select id="reg-role">
               <option value="">Rolle wählen...</option>
-              <option value="stammfahrer">Stammfahrer</option>
-              <option value="ersatzfahrer">Ersatzfahrer</option>
+              <option value="Stammfahrer">Stammfahrer</option>
+              <option value="Ersatzfahrer">Ersatzfahrer</option>
             </select>
           </div>
           <div class="form-group span2">
             <label>Team-Auswahl *</label>
-            <select id="reg-team" required>
+            <select id="reg-team">
               <option value="">Team wählen...</option>
             </select>
           </div>
@@ -429,7 +429,7 @@
           <div class="form-divider"></div>
           <div class="form-group span2">
             <label class="checkbox-row">
-              <input type="checkbox" id="reg-rules" required>
+              <input type="checkbox" id="reg-rules">
               Ich akzeptiere das Liga-Regelwerk und die Teilnahmebedingungen.
             </label>
           </div>
@@ -514,7 +514,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBAO3bYedGDFXfuNObINfhOBZXgBdpHZYo",
@@ -555,6 +555,7 @@
   const statFullTeams = document.getElementById("stat-full-teams");
 
   let localTeamsMap = {};
+  let allDriversCached = [];
 
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (teamsSnapshot) => {
@@ -563,7 +564,7 @@
       
       teamsSnapshot.forEach(doc => {
         const data = doc.data();
-        localTeamsMap[doc.id] = data.name || doc.id;
+        localTeamsMap[doc.id] = data; // Jetzt mappen wir das gesamte Datenobjekt des Teams
         
         const opt = document.createElement("option");
         opt.value = doc.id;
@@ -581,53 +582,53 @@
     onSnapshot(collection(db, "fahrer"), (driverSnapshot) => {
       let pendingDriversList = [];
       let activeDriversList = [];
-      let teamOccupancy = {};
-
-      Object.keys(localTeamsMap).forEach(id => {
-        teamOccupancy[id] = [];
-      });
+      allDriversCached = []; // Für den Nummern-Check auf der Client-Seite halten wir das aktuell
 
       driverSnapshot.forEach(doc => {
         const d = doc.data();
         const fahrerObj = { id: doc.id, ...d };
+        allDriversCached.push(fahrerObj);
 
-        if (d.status === "ausstehend") {
+        if (d.licenseStatus === "Offen" || d.status === "ausstehend") {
           pendingDriversList.push(fahrerObj);
-        } else if (d.status === "bestätigt") {
+        } else if (d.licenseStatus === "Bestätigt" || d.active === true) {
           activeDriversList.push(fahrerObj);
-          if (teamOccupancy[d.team] !== undefined) {
-            teamOccupancy[d.team].push(d.fahrername);
-          }
         }
       });
 
-      renderTeamsUI(teamOccupancy);
+      renderTeamsUI();
       renderDriversUI(activeDriversList);
       renderAdminTable(pendingDriversList);
-      updateDashboardStats(pendingDriversList, activeDriversList, teamOccupancy);
+      updateDashboardStats(pendingDriversList, activeDriversList);
 
     }, (error) => {
-      console.error("Fehler bei Fahrer-Abfrage (Collection existiert evtl. noch nicht): ", error);
+      console.error("Fehler bei Fahrer-Abfrage: ", error);
     });
   }
 
-  function renderTeamsUI(occupancy) {
+  function renderTeamsUI() {
     let html = "";
     Object.keys(localTeamsMap).forEach(teamId => {
-      const name = localTeamsMap[teamId];
-      const slots = occupancy[teamId] || [];
-      const isFull = slots.length >= 2;
+      const team = localTeamsMap[teamId];
+      
+      // Sitzplatz-Namen aus den verknüpften IDs auflösen
+      const driver1 = allDriversCached.find(d => d.id === team.driverOneId);
+      const driver2 = allDriversCached.find(d => d.id === team.driverTwoId);
+
+      const d1Name = driver1 ? driver1.realName : null;
+      const d2Name = driver2 ? driver2.realName : null;
+      const isFull = team.status === "Voll" || (d1Name && d2Name);
 
       const cardHtml = `
         <div class="team-card">
           <div class="team-card-top">
             <div class="team-dot tc-default">F1</div>
-            <div class="team-name">${name}</div>
+            <div class="team-name">${team.name || teamId}</div>
             <span class="badge ${isFull ? 'badge-full' : 'badge-free'}">${isFull ? 'VOLL' : 'FREI'}</span>
           </div>
           <div class="team-card-body">
-            <div class="driver-slot"><span class="name ${slots[0] ? 'taken' : ''}">Sitz 1: ${slots[0] || 'Unbesetzt'}</span></div>
-            <div class="driver-slot"><span class="name ${slots[1] ? 'taken' : ''}">Sitz 2: ${slots[1] || 'Unbesetzt'}</span></div>
+            <div class="driver-slot"><span class="name ${d1Name ? 'taken' : ''}">Sitz 1: ${d1Name || 'Unbesetzt'}</span></div>
+            <div class="driver-slot"><span class="name ${d2Name ? 'taken' : ''}">Sitz 2: ${d2Name || 'Unbesetzt'}</span></div>
           </div>
         </div>`;
       html += cardHtml;
@@ -644,14 +645,17 @@
       return;
     }
 
-    driversDisplayGrid.innerHTML = activeDrivers.map(d => `
-      <div class="driver-card">
-        <div class="driver-num">#${d.nummer || '00'}</div>
-        <div class="driver-name">${d.fahrername}</div>
-        <div class="driver-team">Team: ${localTeamsMap[d.team] || d.team || 'Ersatz'}</div>
-        <div class="driver-team" style="color: var(--accent); text-transform: uppercase; font-size: 9px; font-weight: bold;">${d.rolle || 'Fahrer'}</div>
-      </div>
-    `).join('');
+    driversDisplayGrid.innerHTML = activeDrivers.map(d => {
+      const teamObj = localTeamsMap[d.teamId];
+      return `
+        <div class="driver-card">
+          <div class="driver-num">#${d.driverNumber || '00'}</div>
+          <div class="driver-name">${d.realName}</div>
+          <div class="driver-team">Team: ${teamObj ? teamObj.name : 'Ersatz'}</div>
+          <div class="driver-team" style="color: var(--accent); text-transform: uppercase; font-size: 9px; font-weight: bold;">${d.role || 'Fahrer'}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   function renderAdminTable(pendingDrivers) {
@@ -660,111 +664,206 @@
       return;
     }
 
-    adminRequestsTable.innerHTML = pendingDrivers.map(d => `
-      <tr>
-        <td class="td-name">${d.fahrername}</td>
-        <td class="td-mono">${d.discord}</td>
-        <td class="td-mono">#${d.nummer || '00'}</td>
-        <td>${localTeamsMap[d.team] || d.team}</td>
-        <td style="text-transform: uppercase; font-size: 11px; color: var(--yellow);">${d.rolle || 'Stamm'}</td>
-        <td class="td-actions">
-          <button class="btn btn-green btn-sm" id="approve-${d.id}">Annehmen</button>
-          <button class="btn btn-outline btn-sm" id="reject-${d.id}" style="color: var(--red); border-color: var(--red-dim);">Löschen</button>
-        </td>
-      </tr>
-    `).join('');
+    adminRequestsTable.innerHTML = pendingDrivers.map(d => {
+      const teamObj = localTeamsMap[d.teamId];
+      return `
+        <tr>
+          <td class="td-name">${d.realName}</td>
+          <td class="td-mono">${d.discordName}</td>
+          <td class="td-mono">#${d.driverNumber || '00'}</td>
+          <td>${teamObj ? teamObj.name : 'Keines (Ersatz)'}</td>
+          <td style="text-transform: uppercase; font-size: 11px; color: var(--yellow);">${d.role || 'Stamm'}</td>
+          <td class="td-actions">
+            <button class="btn btn-green btn-sm" id="approve-${d.id}">Annehmen</button>
+            <button class="btn btn-outline btn-sm" id="reject-${d.id}" style="color: var(--red); border-color: var(--red-dim);">Löschen</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
 
     pendingDrivers.forEach(d => {
-      document.getElementById(`approve-${d.id}`).addEventListener('click', () => updateDriverStatus(d.id, "bestätigt"));
+      document.getElementById(`approve-${d.id}`).addEventListener('click', () => confirmDriverLicense(d.id));
       document.getElementById(`reject-${d.id}`).addEventListener('click', () => deleteDriverRecord(d.id));
     });
   }
 
-  function updateDashboardStats(pending, active, occupancy) {
+  function updateDashboardStats(pending, active) {
     const totalTeamsCount = Object.keys(localTeamsMap).length;
     statTotalTeams.textContent = totalTeamsCount;
     statPendingDrivers.textContent = pending.length;
-    statActiveDrivers.textContent = active.filter(f => f.rolle === "stammfahrer").length;
-    statSubDrivers.textContent = active.filter(f => f.rolle === "ersatzfahrer").length;
+    statActiveDrivers.textContent = active.filter(f => f.role === "Stammfahrer").length;
+    statSubDrivers.textContent = active.filter(f => f.role === "Ersatzfahrer").length;
 
     let fullTeams = 0;
     let freeSlots = 0;
-    Object.keys(occupancy).forEach(id => {
-      if(occupancy[id].length >= 2) fullTeams++;
-      freeSlots += (2 - occupancy[id].length);
+
+    Object.keys(localTeamsMap).forEach(id => {
+      const team = localTeamsMap[id];
+      let slotsOccupied = 0;
+      if(team.driverOneId) slotsOccupied++;
+      if(team.driverTwoId) slotsOccupied++;
+      
+      if(team.status === "Voll" || slotsOccupied >= 2) fullTeams++;
+      freeSlots += (2 - slotsOccupied);
     });
 
     statFullTeams.textContent = fullTeams;
-    statFreeTeams.textContent = freeSlots;
+    statFreeTeams.textContent = freeSlots < 0 ? 0 : freeSlots;
   }
 
-  async function updateDriverStatus(id, newStatus) {
+  // Hilfsfunktion für Logs
+  async function createAdminLog(message, driverId = null, teamId = null) {
     try {
-      await updateDoc(doc(db, "fahrer", id), { status: newStatus });
-      alert("Fahrerlizenz erfolgreich freigeschaltet!");
+      await addDoc(collection(db, "admin_logs"), {
+        message: message,
+        driverId: driverId,
+        teamId: teamId,
+        timestamp: new Date()
+      });
     } catch (e) {
-      console.error(e);
-      alert("Fehler bei Rechteprüfung! Bitte Firestore Rules prüfen.");
+      console.error("Log-Erstellung fehlgeschlagen:", e);
+    }
+  }
+
+  // REGISTRATION LOGIC
+  document.getElementById("submit-reg-btn").addEventListener("click", async () => {
+    const errorDiv = document.getElementById("reg-error");
+    const successDiv = document.getElementById("reg-success");
+    errorDiv.style.display = "none";
+    successDiv.style.display = "none";
+
+    const data = {
+      realName: document.getElementById("reg-name").value.trim(),
+      discordName: document.getElementById("reg-discord").value.trim(),
+      driverNumber: document.getElementById("reg-number").value.trim(),
+      role: document.getElementById("reg-role").value,
+      teamId: document.getElementById("reg-team").value,
+      acceptRules: document.getElementById("reg-rules").checked,
+      comment: document.getElementById("reg-comment").value.trim()
+    };
+
+    try {
+      // Validierungen aus deiner Vorgabe
+      if (!data.realName) throw "Name ist Pflicht";
+      if (!data.discordName) throw "Discordname ist Pflicht";
+      if (!data.driverNumber) throw "Fahrernummer ist Pflicht";
+      if (!data.acceptRules) throw "Regelwerk muss akzeptiert werden";
+
+      // driverNumberExists(data.driverNumber)
+      const numberExists = allDriversCached.some(d => d.driverNumber === data.driverNumber);
+      if (numberExists) {
+        throw "Diese Fahrernummer ist bereits vergeben";
+      }
+
+      if (data.role === "Stammfahrer") {
+        if (!data.teamId) throw "Team muss ausgewählt werden";
+
+        // getTeam(data.teamId)
+        const team = localTeamsMap[data.teamId];
+        if (!team) throw "Ausgewähltes Team existiert nicht";
+
+        if (team.status === "Voll") {
+          throw "Dieses Team ist bereits voll";
+        }
+      }
+
+      // createDriver(...)
+      await addDoc(collection(db, "fahrer"), {
+        realName: data.realName,
+        discordName: data.discordName,
+        driverNumber: data.driverNumber,
+        teamId: data.role === "Ersatzfahrer" ? null : data.teamId,
+        role: data.role,
+        salary: 0,
+        rating: 50,
+        licenseStatus: "Offen",
+        active: false,
+        penaltyPoints: 0,
+        notes: data.comment,
+        registriertAm: new Date()
+      });
+
+      // createAdminLog(...)
+      await createAdminLog("Neue Fahrer-Lizenzanfrage erstellt");
+
+      successDiv.style.display = "block";
+      document.getElementById("main-reg-form").reset();
+      window.scrollTo(0, 0);
+
+    } catch (error) {
+      console.error(error);
+      errorDiv.textContent = typeof error === "string" ? error : `Fehler beim Speichern: ${error.message}`;
+      errorDiv.style.display = "block";
+      window.scrollTo(0, 0);
+    }
+  });
+
+  // ADMIN CONFIRM LICENSE
+  async function confirmDriverLicense(driverId) {
+    try {
+      // getDriver(driverId)
+      const driver = allDriversCached.find(d => d.id === driverId);
+      if (!driver) throw "Fahrer nicht im System gefunden.";
+
+      driver.licenseStatus = "Bestätigt";
+      driver.active = true;
+
+      if (driver.role === "Stammfahrer" && driver.teamId) {
+        // getTeam(driver.teamId)
+        const team = localTeamsMap[driver.teamId];
+        if (!team) throw "Team des Fahrers nicht gefunden.";
+
+        if (!team.driverOneId) {
+          team.driverOneId = driver.id;
+        } else if (!team.driverTwoId) {
+          team.driverTwoId = driver.id;
+        } else {
+          throw "Team ist bereits voll";
+        }
+
+        // updateTeamStatus(team) + saveTeam(team)
+        let teamSlotsOccupied = 0;
+        if(team.driverOneId) teamSlotsOccupied++;
+        if(team.driverTwoId) teamSlotsOccupied++;
+        if (teamSlotsOccupied >= 2) {
+          team.status = "Voll";
+        }
+
+        await updateDoc(doc(db, "teams", driver.teamId), {
+          driverOneId: team.driverOneId || null,
+          driverTwoId: team.driverTwoId || null,
+          status: team.status || "Frei"
+        });
+      }
+
+      // saveDriver(driver)
+      await updateDoc(doc(db, "fahrer", driverId), {
+        licenseStatus: "Bestätigt",
+        active: true
+      });
+
+      // createAdminLog(...)
+      await createAdminLog("Fahrer-Lizenz bestätigt", driver.id, driver.teamId);
+      
+      alert(`Fahrer ${driver.realName} erfolgreich freigeschaltet!`);
+
+    } catch (error) {
+      console.error(error);
+      alert(typeof error === "string" ? error : `Fehler beim Bestätigen: ${error.message}`);
     }
   }
 
   async function deleteDriverRecord(id) {
-    if(confirm("Möchtest du diese Anmeldung wirklich verwerfen?")) {
+    if(confirm("Möchtest du diese Anmeldung wirklich verwerfen und unwiderruflich löschen?")) {
       try {
         await deleteDoc(doc(db, "fahrer", id));
+        await createAdminLog("Fahrer-Lizenzanfrage gelöscht/abgelehnt", id);
       } catch (e) {
         console.error(e);
         alert("Löschen fehlgeschlagen.");
       }
     }
   }
-
-  document.getElementById("submit-reg-btn").addEventListener("click", async () => {
-    const form = document.getElementById("main-reg-form");
-    if(!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    const name = document.getElementById("reg-name").value;
-    const discord = document.getElementById("reg-discord").value;
-    const number = document.getElementById("reg-number").value;
-    const role = document.getElementById("reg-role").value;
-    const team = document.getElementById("reg-team").value;
-    const exp = document.getElementById("reg-exp").value;
-    const platform = document.getElementById("reg-platform").value;
-    const comment = document.getElementById("reg-comment").value;
-
-    const errorDiv = document.getElementById("reg-error");
-    const successDiv = document.getElementById("reg-success");
-
-    errorDiv.style.display = "none";
-    successDiv.style.display = "none";
-
-    try {
-      // WICHTIG: Hier übergeben wir ein flaches, sauberes Schlüssel-Wert-Objekt!
-      await addDoc(collection(db, "fahrer"), {
-        fahrername: name,
-        discord: discord,
-        nummer: number,
-        rolle: role,
-        team: team,
-        erfahrung: exp,
-        plattform: platform,
-        kommentar: comment,
-        status: "ausstehend",
-        registriertAm: new Date()
-      });
-
-      successDiv.style.display = "block";
-      form.reset();
-      window.scrollTo(0, 0);
-    } catch (error) {
-      console.error("Ausführlicher Firebase Fehler:", error);
-      errorDiv.textContent = `Fehler: ${error.code || error.message || error}. Bitte passe die Firebase Regeln (Rules) im Dashboard an.`;
-      errorDiv.style.display = "block";
-    }
-  });
 
   initLiveSystem();
 </script>
