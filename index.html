@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 Liga Registration Portal – Season 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+ 
+  :root {
+    --bg: #0a0a0c;
+    --bg2: #111114;
+    --bg3: #18181d;
+    --bg4: #1e1e25;
+    --border: #2a2a35;
+    --border2: #353545;
+    --red: #e10600;
+    --red-glow: rgba(225,6,0,0.3);
+    --red-dim: #8a0400;
+    --accent: #ff2200;
+    --text: #f0f0f5;
+    --text2: #a0a0b0;
+    --text3: #606070;
+    --green: #00c853;
+    --yellow: #ffd600;
+    --blue: #2196f3;
+    --team-red: #e10600;
+    --team-orange: #ff8700;
+    --team-cyan: #00d2be;
+    --team-yellow: #ffd600;
+    --team-blue: #0067ff;
+    --team-blue2: #1565c0;
+    --team-green: #35b000;
+    --team-teal: #005aff;
+    --team-purple: #9c27b0;
+    --team-indigo: #3949ab;
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+ 
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+    background: rgba(10,10,12,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px; font-weight: 900;
+    color: var(--red);
+    padding: 0 24px;
+    letter-spacing: 0.05em;
+    height: 52px;
+    display: flex; align-items: center; gap: 8px;
+    border-right: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links {
+    display: flex; align-items: center; height: 52px;
+    padding: 0 8px; gap: 2px; flex: 1;
+  }
+  .nav-links a {
+    color: var(--text2); text-decoration: none;
+    font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: 4px;
+    transition: all 0.15s; letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--bg3); }
+  .nav-links a.active { color: var(--red); }
+  .nav-right {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px;
+  }
+  .btn { display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 7px 16px; border-radius: 4px; border: none; cursor: pointer;
+    text-decoration: none; transition: all 0.15s; letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover { background: #ff1a0a; box-shadow: 0 0 16px var(--red-glow); }
+  .btn-outline { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+  .btn-outline:hover { border-color: var(--red); color: var(--red); }
+  .btn-sm { padding: 5px 12px; font-size: 11px; }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { background: #00e060; }
+ 
+  /* ─── LAYOUT ─── */
+  .page { display: none; padding-top: 52px; min-height: 100vh; }
+  .page.active { display: block; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+ 
+  /* ─── HERO / DASHBOARD ─── */
+  .hero {
+    background: linear-gradient(135deg, #0a0a0c 0%, #130008 50%, #0a0a0c 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 36px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: 'F1';
+    position: absolute; right: -20px; top: -40px;
+    font-family: 'Orbitron', sans-serif; font-size: 240px; font-weight: 900;
+    color: rgba(225,6,0,0.04); line-height: 1; pointer-events: none;
+  }
+  .hero-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+    color: var(--red); text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 12px;
+  }
+  .hero-tag::before { content: '▶ '; }
+  .hero-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 42px; font-weight: 900; line-height: 1.05;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .hero-title span { color: var(--red); }
+  .hero-sub { color: var(--text2); font-size: 15px; margin-bottom: 28px; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+ 
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    gap: 1px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 6px;
+    overflow: hidden; margin: 28px 0 0;
+  }
+  .stat-item {
+    background: var(--bg2); padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-value {
+    font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700;
+  }
+  .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat-item.alert .stat-value { color: var(--red); }
+  .stat-item.ok .stat-value { color: var(--green); }
+ 
+  /* Section heading */
+  .section { padding: 32px 0; }
+  .section-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-label {
+    font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--red); text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .section-title {
+    font-family: 'Orbitron', sans-serif; font-size: 15px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+ 
+  /* ─── TEAM CARDS ─── */
+  .teams-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .team-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .team-card:hover { border-color: var(--border2); }
+  .team-card-top {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+  }
+  .team-dot {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .team-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .team-meta { font-size: 10px; color: var(--text3); }
+  .badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; letter-spacing: 0.06em;
+  }
+  .badge-free { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
+  .badge-full { background: rgba(225,6,0,0.15); color: var(--red); border: 1px solid rgba(225,6,0,0.3); }
+  .team-card-body { padding: 12px 14px; }
+  .driver-slot { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12px; }
+  .driver-slot .icon { color: var(--text3); font-size: 11px; }
+  .driver-slot .name { color: var(--text2); }
+  .driver-slot .name.taken { color: var(--text); }
+ 
+  /* ─── RACES ─── */
+  .race-list { display: flex; flex-direction: column; gap: 8px; }
+  .race-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .race-num {
+    font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 900;
+    color: var(--border2); width: 36px; flex-shrink: 0;
+  }
+  .race-info { flex: 1; }
+  .race-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .race-detail { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+  .race-status {
+    font-size: 10px; font-weight: 700; padding: 3px 10px;
+    border-radius: 100px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .status-planned { background: rgba(96,96,112,0.3); color: var(--text2); border: 1px solid var(--border2); }
+  .status-open { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
+  .status-done { background: rgba(225,6,0,0.1); color: var(--red-dim); border: 1px solid rgba(225,6,0,0.2); }
+ 
+  /* ─── FORMS ─── */
+  .form-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 32px; max-width: 640px; margin: 0 auto;
+  }
+  .form-title {
+    font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--red); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .form-sub { color: var(--text2); font-size: 13px; margin-bottom: 28px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-grid.single { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.span2 { grid-column: span 2; }
+  label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+  input, select, textarea {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    padding: 9px 12px; outline: none; width: 100%;
+    transition: border-color 0.15s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+  input:focus, select:focus, textarea:focus { border-color: var(--red); }
+  select option { background: var(--bg3); }
+  textarea { resize: vertical; min-height: 80px; }
+  .form-divider { grid-column: span 2; height: 1px; background: var(--border); margin: 4px 0; }
+  .checkbox-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--text2); cursor: pointer;
+  }
+  .checkbox-row input[type="checkbox"] {
+    width: 16px; height: 16px; padding: 0; cursor: pointer;
+    accent-color: var(--red);
+  }
+  .checkbox-row a { color: var(--red); }
+  .form-submit { margin-top: 20px; width: 100%; padding: 13px; font-size: 13px; }
+  .form-error {
+    background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3);
+    border-radius: 5px; padding: 10px 14px;
+    color: var(--red); font-size: 12px; display: none;
+  }
+  .form-success {
+    background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3);
+    border-radius: 5px; padding: 10px 14px;
+    color: var(--green); font-size: 12px; display: none;
+  }
+ 
+  /* ─── ADMIN DASHBOARD ─── */
+  .admin-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .admin-tab {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 10px 18px; cursor: pointer;
+    color: var(--text3); border-bottom: 2px solid transparent;
+    transition: all 0.15s; background: none; border-top: none;
+    border-left: none; border-right: none;
+  }
+  .admin-tab:hover { color: var(--text2); }
+  .admin-tab.active { color: var(--red); border-bottom-color: var(--red); }
+ 
+  .admin-panel { display: none; }
+  .admin-panel.active { display: block; }
+ 
+  .admin-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .astat {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .astat-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .astat-icon.red { background: rgba(225,6,0,0.15); }
+  .astat-icon.green { background: rgba(0,200,83,0.15); }
+  .astat-icon.blue { background: rgba(33,150,243,0.15); }
+  .astat-icon.yellow { background: rgba(255,214,0,0.15); }
+  .astat-val { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 700; }
+  .astat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+ 
+  /* Table */
+  .table-wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+  }
+  .table-header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .table-title { font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; flex: 1; }
+  .search-input {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-size: 12px;
+    padding: 6px 12px; outline: none; width: 220px;
+  }
+  .search-input:focus { border-color: var(--border2); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text3); padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-name { font-weight: 600; }
+  .td-mono { font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+  .td-actions { display: flex; gap: 6px; }
+ 
+  /* Driver cards for /drivers */
+  .drivers-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .driver-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; position: relative; overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .driver-card:hover { border-color: var(--border2); }
+  .driver-num {
+    font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900;
+    color: rgba(255,255,255,0.07); position: absolute; right: 8px; top: 4px;
+    line-height: 1;
+  }
+  .driver-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .driver-team { font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+  .driver-stats { display: flex; flex-direction: column; gap: 4px; }
+  .driver-stat { display: flex; justify-content: space-between; font-size: 11px; }
+  .driver-stat span:first-child { color: var(--text3); }
+  .driver-stat span:last-child { font-family: 'JetBrains Mono', monospace; }
+ 
+  /* Rating bar */
+  .rating-bar {
+    height: 3px; background: var(--border); border-radius: 2px;
+    margin-top: 8px;
+  }
+  .rating-fill { height: 100%; border-radius: 2px; background: var(--red); }
+ 
+  /* Rules */
+  .rules-list { display: flex; flex-direction: column; gap: 8px; }
+  .rule-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 20px;
+    display: flex; gap: 16px;
+  }
+  .rule-num {
+    font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--red); width: 24px; flex-shrink: 0; padding-top: 1px;
+  }
+  .rule-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  .rule-body { font-size: 12px; color: var(--text2); line-height: 1.6; }
+ 
+  /* FAQ */
+  .faq-list { display: flex; flex-direction: column; gap: 6px; }
+  .faq-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+  }
+  .faq-q {
+    padding: 14px 20px; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.1s;
+  }
+  .faq-q:hover { background: var(--bg3); }
+  .faq-q .arrow { color: var(--text3); transition: transform 0.2s; }
+  .faq-a {
+    display: none; padding: 0 20px 16px;
+    font-size: 12px; color: var(--text2); line-height: 1.7;
+    border-top: 1px solid var(--border); padding-top: 14px;
+  }
+  .faq-item.open .faq-a { display: block; }
+  .faq-item.open .arrow { transform: rotate(180deg); color: var(--red); }
+ 
+  /* Profile */
+  .profile-top {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 28px; margin-bottom: 20px;
+    display: flex; gap: 24px; align-items: center;
+  }
+  .profile-avatar {
+    width: 72px; height: 72px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--red), var(--red-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .profile-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .profile-discord { font-size: 13px; color: var(--text2); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+  .profile-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+ 
+  .profile-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .info-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px;
+  }
+  .info-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text3); margin-bottom: 16px; }
+  .info-row { display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-key { color: var(--text2); }
+  .info-val { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+ 
+  /* Penalty points */
+  .penalty-ring {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 4px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .penalty-ring .val { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; color: var(--yellow); }
+  .penalty-ring .lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+ 
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 48px; color: var(--text3); font-size: 13px;
+  }
+ 
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 14px 20px;
+    font-size: 13px; font-weight: 500;
+    transform: translateX(200%); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+    max-width: 320px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { border-left: 3px solid var(--green); }
+  .toast.error { border-left: 3px solid var(--red); }
+ 
+  /* Page header */
+  .page-header {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 24px 0;
+  }
+  .page-header-inner { display: flex; align-items: center; gap: 16px; }
+  .page-header-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: rgba(225,6,0,0.15); border: 1px solid rgba(225,6,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .page-header-title {
+    font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .page-header-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+ 
+  /* Filter row */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-select {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--text); font-size: 12px;
+    padding: 6px 10px; outline: none; cursor: pointer;
+  }
+ 
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+ 
+  /* Race entry badge */
+  .entry-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 4px; padding: 2px 8px; font-size: 10px; color: var(--green);
+  }
+ 
+  /* Team color dots */
+  .tc-red { background: #e10600; }
+  .tc-orange { background: #ff8700; }
+  .tc-cyan { background: #00d2be; }
+  .tc-yellow { background: #ffd600; }
+  .tc-blue { background: #0067ff; }
+  .tc-blue2 { background: #1565c0; }
+  .tc-green { background: #35b000; }
+  .tc-teal { background: #005aff; }
+  .tc-white { background: #e8e8e8; }
+  .tc-purple { background: #9c27b0; }
+  .tc-indigo { background: #3949ab; }
+ 
+  /* Responsive */
+  @media (max-width: 768px) {
+    .teams-grid { grid-template-columns: 1fr; }
+    .drivers-grid { grid-template-columns: 1fr 1fr; }
+    .admin-stats { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.span2 { grid-column: span 1; }
+    .form-divider { grid-column: span 1; }
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .profile-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="nav-logo">⬡ F1 <span>Liga</span></div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showPage('dashboard',this)">Dashboard</a>
+    <a href="#" onclick="showPage('drivers',this)">Fahrer</a>
+    <a href="#" onclick="showPage('teams',this)">Teams</a>
+    <a href="#" onclick="showPage('races',this)">Rennen</a>
+    <a href="#" onclick="showPage('rules',this)">Regelwerk</a>
+    <a href="#" onclick="showPage('faq',this)">FAQ</a>
+    <a href="#" onclick="showPage('admin',this)">Admin</a>
+    <a href="#" onclick="showPage('profile',this)">Profil</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-outline btn-sm" onclick="showPage('registration',document.querySelector('.nav-links a:nth-child(1)'))">Registrieren</button>
+    <button class="btn btn-red btn-sm" onclick="showPage('race-registration',document.querySelector('.nav-links a:nth-child(1)'))">Rennanmeldung</button>
+  </div>
+</nav>
+ 
+<div id="page-dashboard" class="page active">
+  <div class="hero">
+    <div class="container">
+      <div class="hero-tag">Season 2026</div>
+      <h1 class="hero-title">Liga Registration<br><span>Portal</span></h1>
+      <p class="hero-sub">Registriere dich als Fahrer, wähle dein Team und starte in die Formula-1 Liga Saison 2026.</p>
+      <div class="hero-actions">
+        <button class="btn btn-red" onclick="showPage('registration',null)">Jetzt Registrieren</button>
+        <button class="btn btn-outline" onclick="showPage('race-registration',null)">Rennanmeldung</button>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><span class="stat-value" id="stat-total-teams">11</span><span class="stat-label">Teams gesamt</span></div>
+        <div class="stat-item ok"><span class="stat-value" id="stat-free-teams">11</span><span class="stat-label">Freie Teams</span></div>
+        <div class="stat-item alert"><span class="stat-value" id="stat-pending-drivers">0</span><span class="stat-label">Offene Anfragen</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-active-drivers">0</span><span class="stat-label">Best. Fahrer</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-sub-drivers">0</span><span class="stat-label">Ersatzfahrer</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-full-teams">0</span><span class="stat-label">Volle Teams</span></div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="container">
+    <div class="section">
+      <div class="section-head">
+        <span class="section-label">⊕</span>
+        <span class="section-title">Teams 2026</span>
+        <div class="section-line"></div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('teams',null)">Alle Teams →</button>
+      </div>
+      <div class="teams-grid" id="dash-teams"></div>
+    </div>
+ 
+    <div class="section">
+      <div class="section-head">
+        <span class="section-label">◉</span>
+        <span class="section-title">Nächste Rennen</span>
+        <div class="section-line"></div>
+        <button class="btn btn-outline btn-sm" onclick="showPage('races',null)">Alle Rennen →</button>
+      </div>
+      <div class="race-list" id="dash-races"></div>
+    </div>
+  </div>
+</div>
+ 
+<div id="page-registration" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">🏎</div>
+        <div>
+          <div class="page-header-title">Fahrer-Registrierung</div>
+          <div class="page-header-sub">Melde dich für die Formula-1 Liga Season 2026 an</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding-top:32px; padding-bottom:48px;">
+    <div class="form-card">
+      <div class="form-title">⬡ Fahrer-Registrierung</div>
+      <div class="form-sub">Fülle alle Felder aus. Deine Lizenz wird nach Prüfung durch das Admin-Team freigeschaltet.</div>
+      <div id="reg-error" class="form-error">Fahrernummer bereits vergeben. Bitte wähle eine andere.</div>
+      <div id="reg-success" class="form-success">✓ Registrierung erfolgreich! Deine Lizenzanfrage wurde eingereicht und wird geprüft.</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Fahrername / Echter Name *</label>
+          <input type="text" id="reg-name" placeholder="Max Mustermann">
+        </div>
+        <div class="form-group">
+          <label>Discordname *</label>
+          <input type="text" id="reg-discord" placeholder="username#1234">
+        </div>
+        <div class="form-group">
+          <label>Fahrernummer (1–99) *</label>
+          <input type="number" id="reg-number" placeholder="z.B. 44" min="1" max="99">
+        </div>
+        <div class="form-group">
+          <label>Rolle *</label>
+          <select id="reg-role">
+            <option value="">Rolle wählen...</option>
+            <option value="stammfahrer">Stammfahrer</option>
+            <option value="ersatzfahrer">Ersatzfahrer</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Team-Auswahl *</label>
+          <select id="reg-team">
+            <option value="">Team wählen...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Erfahrung im Simracing</label>
+          <select id="reg-exp">
+            <option value="">Auswählen...</option>
+            <option value="Einsteiger (<1 Jahr)">Einsteiger (&lt;1 Jahr)</option>
+            <option value="Fortgeschritten (1–3 Jahre)">Fortgeschritten (1–3 Jahre)</option>
+            <option value="Erfahren (3–5 Jahre)">Erfahren (3–5 Jahre)</option>
+            <option value="Profi (>5 Jahre)">Profi (&gt;5 Jahre)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Plattform</label>
+          <select id="reg-platform">
+            <option value="">Auswählen...</option>
+            <option value="PC">PC</option>
+            <option value="PlayStation 5">PlayStation 5</option>
+            <option value="Xbox Series X/S">Xbox Series X/S</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Kommentar / Bemerkung</label>
+          <textarea id="reg-comment" placeholder="Optionale Nachricht an die Ligaleitung..."></textarea>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-group span2">
+          <label class="checkbox-row">
+            <input type="checkbox" id="reg-rules">
+            Ich akzeptiere das <a href="#" onclick="showPage('rules',null)">Liga-Regelwerk</a> und die Teilnahmebedingungen.
+          </label>
+        </div>
+      </div>
+      <button class="btn btn-red form-submit" onclick="submitRegistration()">Registrierung Absenden</button>
+    </div>
+  </div>
+</div>
+ 
+<div id="page-race-registration" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">🏁</div>
+        <div>
+          <div class="page-header-title">Rennanmeldung</div>
+          <div class="page-header-sub">Melde dich für ein bevorstehendes Rennen an</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding-top:32px; padding-bottom:48px;">
+    <div class="form-card">
+      <div class="form-title">⬡ Rennanmeldung</div>
+      <div class="form-sub">Wähle Fahrer und Rennen. Stammfahrer sind automatisch ihrem Team zugeordnet.</div>
+      <div id="race-error" class="form-error" style="display:none;">Fehler beim Einreichen der Anmeldung.</div>
+      <div id="race-success" class="form-success">✓ Anmeldung erfolgreich eingereicht!</div>
+      <div class="form-grid">
+        <div class="form-group span2">
+          <label>Fahrer auswählen *</label>
+          <select id="race-driver">
+            <option value="">Fahrer wählen...</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Rennen auswählen *</label>
+          <select id="race-race">
+            <option value="">Rennen wählen...</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Teilnahme</label>
+          <select id="race-participate">
+            <option value="yes">Ja, ich nehme teil</option>
+            <option value="no">Nein, ich kann nicht</option>
+            <option value="maybe">Eventuell</option>
+          </select>
+        </div>
+        <div class="form-group span2">
+          <label>Kommentar</label>
+          <textarea id="race-comment" placeholder="Optionale Nachricht..."></textarea>
+        </div>
+      </div>
+      <button class="btn btn-red form-submit" onclick="submitRaceReg()">Anmeldung Absenden</button>
+    </div>
+  </div>
+</div>
+ 
+<div id="page-drivers" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">👤</div>
+        <div>
+          <div class="page-header-title">Alle Fahrer</div>
+          <div class="page-header-sub">Öffentliche Fahrerübersicht – Season 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="filter-row">
+      <input class="search-input" id="driver-search" placeholder="🔍  Fahrer suchen..." oninput="triggerFilters()">
+      <select class="filter-select" id="driver-team-filter" onchange="triggerFilters()">
+        <option value="">Alle Teams</option>
+      </select>
+      <select class="filter-select" id="driver-status-filter" onchange="triggerFilters()">
+        <option value="">Alle Status</option>
+        <option value="bestätigt">Bestätigt</option>
+        <option value="offen">Offen</option>
+        <option value="abgelehnt">Abgelehnt</option>
+      </select>
+      <select class="filter-select" id="driver-role-filter" onchange="triggerFilters()">
+        <option value="">Alle Rollen</option>
+        <option value="stammfahrer">Stammfahrer</option>
+        <option value="ersatzfahrer">Ersatzfahrer</option>
+      </select>
+    </div>
+    <div class="drivers-grid" id="drivers-grid"></div>
+  </div>
+</div>
+ 
+<div id="page-teams" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">🏆</div>
+        <div>
+          <div class="page-header-title">Teams 2026</div>
+          <div class="page-header-sub">Teamübersicht – Formula 1 Liga</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="teams-grid" id="teams-grid"></div>
+  </div>
+</div>
+ 
+<div id="page-races" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">🏁</div>
+        <div>
+          <div class="page-header-title">Rennkalender</div>
+          <div class="page-header-sub">Saison-Termine & Strecken</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="race-list" id="races-grid"></div>
+  </div>
+</div>
+
+<div id="page-rules" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">📜</div>
+        <div>
+          <div class="page-header-title">Liga-Regelwerk</div>
+          <div class="page-header-sub">Verhaltensregeln & Rennstrafen</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="rules-list">
+      <div class="rule-item">
+        <div class="rule-num">01</div>
+        <div>
+          <div class="rule-title">Faires Verhalten</div>
+          <div class="rule-body">Respektvoller Umgang auf und neben der Strecke ist Pflicht. Beleidigungen im Voicechat führen zum Ausschluss.</div>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-num">02</div>
+        <div>
+          <div class="rule-title">Strafpunkte-System</div>
+          <div class="rule-body">Wer 12 Strafpunkte (AP) sammelt, erhält automatisch eine Rennsperre für das darauffolgende Event.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-faq" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">❓</div>
+        <div>
+          <div class="page-header-title">Häufige Fragen (FAQ)</div>
+          <div class="page-header-sub">Alles Wissenswerte zur Liga</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="faq-list">
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <div class="faq-q">Wie werde ich Stammfahrer? <span class="arrow">▼</span></div>
+        <div class="faq-a">Nach deiner Registrierung prüfen die Admins deine Anfrage. Ist ein Platz in deinem Wunschteam frei, wirst du freigeschaltet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-admin" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">⚙</div>
+        <div>
+          <div class="page-header-title">Admin-Dashboard</div>
+          <div class="page-header-sub">Anfragen verwalten & Liga-Verwaltung</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('requests', this)">Anfragen</button>
+      <button class="admin-tab" onclick="switchAdminTab('drivers-mng', this)">Fahrer-Management</button>
+    </div>
+    
+    <div id="admin-panel-requests" class="admin-panel active">
+      <div class="table-wrap">
+        <table id="admin-requests-table">
+          <thead>
+            <tr>
+              <th>Fahrer</th>
+              <th>Discord</th>
+              <th>Nummer</th>
+              <th>Team</th>
+              <th>Rolle</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div id="admin-panel-drivers-mng" class="admin-panel">
+      <div class="table-wrap">
+        <table id="admin-mng-table">
+          <thead>
+            <tr>
+              <th>Fahrer</th>
+              <th>Team</th>
+              <th>Strafpunkte</th>
+              <th>Rating (SR)</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-profile" class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="page-header-inner">
+        <div class="page-header-icon">🆔</div>
+        <div>
+          <div class="page-header-title">Mein Fahrerprofil</div>
+          <div class="page-header-sub">Deine Statistiken & Live-Lizenz</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="padding: 28px 24px;">
+    <div id="profile-content">
+      <div class="empty">Bitte wähle zuerst deinen Fahrer auf der Fahrerseite aus oder reiche eine Registrierung ein.</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, getDocs, doc, query, where, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBAO3bYedGDFXfuNObINfhOBZXgBdpHZYo",
+    authDomain: "elite-austrian-racing-league.firebaseapp.com",
+    projectId: "elite-austrian-racing-league",
+    storageBucket: "elite-austrian-racing-league.firebasestorage.app",
+    messagingSenderId: "886910789394",
+    appId: "1:886910789394:web:7a45a099b0705cd829b5cb",
+    measurementId: "G-C9D2VMWT3W"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let teamsCache = {};
+  let allDriversLocal = [];
+
+  // NAVIGATION (SPA-Routing)
+  window.showPage = function(pageId, navLink) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const targetPage = document.getElementById(`page-${pageId}`);
+    if(targetPage) targetPage.classList.add('active');
+    
+    if(navLink) {
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      navLink.classList.add('active');
+    }
+  };
+
+  // ADMIN TABS SWITCHER
+  window.switchAdminTab = function(tabId, btn) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(`admin-panel-${tabId}`).classList.add('active');
+    btn.classList.add('active');
+  };
+
+  // TOAST SYSTEM
+  window.showToast = function(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.className = `toast show ${type}`;
+    toast.textContent = message;
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+  };
+
+  // TEAMS INITIALISIEREN & CACHEN
+  async function initTeams() {
+    const regTeamSelect = document.getElementById('reg-team');
+    const filterTeamSelect = document.getElementById('driver-team-filter');
+    
+    try {
+      const snap = await getDocs(collection(db, "teams"));
+      teamsCache = {};
+      
+      if(regTeamSelect) regTeamSelect.innerHTML = '<option value="">Team wählen...</option>';
+      if(filterTeamSelect) filterTeamSelect.innerHTML = '<option value="">Alle Teams</option>';
+
+      snap.forEach((docSnap) => {
+        const id = docSnap.id;
+        const team = docSnap.data();
+        teamsCache[id] = team;
+
+        if(regTeamSelect) {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = team.name;
+          regTeamSelect.appendChild(opt);
+        }
+        if(filterTeamSelect) {
+          const opt = document.createElement('option');
+          opt.value = id;
+          opt.textContent = team.name;
+          filterTeamSelect.appendChild(opt);
+        }
+      });
+    } catch(e) {
+      console.error("Fehler beim Laden der Teams: ", e);
+    }
+  }
+
+  // REGISTRIERUNG ABSENDEN
+  window.submitRegistration = async function() {
+    const name = document.getElementById('reg-name').value.trim();
+    const discord = document.getElementById('reg-discord').value.trim();
+    const number = parseInt(document.getElementById('reg-number').value);
+    const role = document.getElementById('reg-role').value;
+    const team_id = document.getElementById('reg-team').value;
+    const experience = document.getElementById('reg-exp').value;
+    const platform = document.getElementById('reg-platform').value;
+    const comment = document.getElementById('reg-comment').value.trim();
+    const rules = document.getElementById('reg-rules').checked;
+
+    const errorDiv = document.getElementById('reg-error');
+    const successDiv = document.getElementById('reg-success');
+
+    errorDiv.style.display = 'none';
+    successDiv.style.display = 'none';
+
+    if(!name || !discord || !number || !role || !team_id || !platform || !rules) {
+      errorDiv.textContent = "Bitte alle Pflichtfelder (*) ausfüllen und das Regelwerk akzeptieren!";
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    // Doublette-Check für Fahrernummer
+    const numCheck = allDriversLocal.some(d => d.driver_number === number);
+    if(numCheck) {
+      errorDiv.textContent = "Fahrernummer bereits vergeben. Bitte wähle eine andere.";
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "drivers"), {
+        name,
+        discord_name: discord,
+        driver_number: number,
+        role,
+        team_id,
+        experience,
+        platform,
+        comment,
+        status: "offen",
+        penalty_points: 0,
+        rating: 50,
+        created_at: new Date()
+      });
+
+      successDiv.style.display = 'block';
+      window.showToast("Registrierung übermittelt!");
+      
+      // Reset Formular
+      document.getElementById('reg-name').value = '';
+      document.getElementById('reg-discord').value = '';
+      document.getElementById('reg-number').value = '';
+      document.getElementById('reg-role').value = '';
+      document.getElementById('reg-team').value = '';
+      document.getElementById('reg-exp').value = '';
+      document.getElementById('reg-platform').value = '';
+      document.getElementById('reg-comment').value = '';
+      document.getElementById('reg-rules').checked = false;
+    } catch(e) {
+      errorDiv.textContent = "Datenbankfehler: " + e.message;
+      errorDiv.style.display = 'block';
+    }
+  };
+
+  // ECHTZEIT-ABFRAGE ALLER FAHRER & DASHBOARD STATISTIKEN
+  onSnapshot(collection(db, "drivers"), (snapshot) => {
+    allDriversLocal = [];
+    snapshot.forEach(d => {
+      allDriversLocal.push({ id: d.id, ...d.data() });
+    });
+
+    renderDriversGrid();
+    renderTeamsGrids();
+    renderAdminPanels();
+    updateDashboardStats();
+    updateRaceRegistrationDropdown();
+  });
+
+  // FILTERS TRIGGER FÜR /DRIVERS
+  window.triggerFilters = function() {
+    renderDriversGrid();
+  };
+
+  function renderDriversGrid() {
+    const grid = document.getElementById('drivers-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+
+    const sVal = document.getElementById('driver-search').value.toLowerCase();
+    const tVal = document.getElementById('driver-team-filter').value;
+    const stVal = document.getElementById('driver-status-filter').value;
+    const rVal = document.getElementById('driver-role-filter').value;
+
+    const filtered = allDriversLocal.filter(d => {
+      const matchSearch = d.name.toLowerCase().includes(sVal);
+      const matchTeam = tVal === "" || d.team_id === tVal;
+      const matchStatus = stVal === "" || d.status === stVal;
+      const matchRole = rVal === "" || d.role === rVal;
+      return matchSearch && matchTeam && matchStatus && matchRole;
+    });
+
+    if(filtered.length === 0) {
+      grid.innerHTML = '<div class="empty" style="grid-column: span 4;">Keine Fahrer gefunden.</div>';
+      return;
+    }
+
+    filtered.forEach(d => {
+      const team = teamsCache[d.team_id] || { name: 'Kein Team' };
+      grid.innerHTML += `
+        <div class="driver-card" style="cursor:pointer;" onclick="viewProfile('${d.id}')">
+          <div class="driver-num">${d.driver_number}</div>
+          <div class="driver-name">${d.name}</div>
+          <div class="driver-team">${team.name}</div>
+          <div class="driver-stats">
+            <div class="driver-stat"><span>Plattform</span><span>${d.platform}</span></div>
+            <div class="driver-stat"><span>Rolle</span><span style="text-transform:capitalize;">${d.role}</span></div>
+            <div class="driver-stat"><span>Strafpunkte</span><span style="color:${d.penalty_points > 0 ? 'var(--yellow)':'inherit'}">${d.penalty_points} AP</span></div>
+            <div class="driver-stat"><span>Rating</span><span>${d.rating} SR</span></div>
+            <div class="driver-stat"><span>Status</span><span style="color:${d.status==='bestätigt'?'var(--green)':d.status==='offen'?'var(--yellow)':'var(--red)'}">${d.status}</span></div>
+          </div>
+          <div class="rating-bar"><div class="rating-fill" style="width: ${Math.min(d.rating, 100)}%;"></div></div>
+        </div>
+      `;
+    });
+  }
+
+  // DASHBOARD & TEAMS UNTERSEITE BEFÜLLEN
+  function renderTeamsGrids() {
+    const dashTeams = document.getElementById('dash-teams');
+    const teamsGrid = document.getElementById('teams-grid');
+
+    if(!dashTeams && !teamsGrid) return;
+
+    let html = '';
+    Object.keys(teamsCache).forEach(tId => {
+      const team = teamsCache[tId];
+      const teamDrivers = allDriversLocal.filter(d => d.team_id === tId && d.status === 'bestätigt');
+      const isFull = teamDrivers.length >= 2;
+
+      html += `
+        <div class="team-card">
+          <div class="team-card-top">
+            <span class="team-dot ${team.color_class || 'tc-white'}"></span>
+            <span class="team-name">${team.name}</span>
+            <span class="badge ${isFull ? 'badge-full':'badge-free'}">${isFull ? 'VOLL':'FREI'}</span>
+          </div>
+          <div class="team-card-body">
+            <div class="driver-slot">
+              <span class="icon">🏎</span>
+              <span class="name ${teamDrivers[0] ? 'taken':''}">${teamDrivers[0] ? teamDrivers[0].name + ' (#'+teamDrivers[0].driver_number+')' : 'Vakant'}</span>
+            </div>
+            <div class="driver-slot">
+              <span class="icon">🏎</span>
+              <span class="name ${teamDrivers[1] ? 'taken':''}">${teamDrivers[1] ? teamDrivers[1].name + ' (#'+teamDrivers[1].driver_number+')' : 'Vakant'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    if(dashTeams) dashTeams.innerHTML = html;
+    if(teamsGrid) teamsGrid.innerHTML = html;
+  }
+
+  // STATISTIK-KARTEN AKTUALISIEREN
+  function updateDashboardStats() {
+    const totalTeams = Object.keys(teamsCache).length;
+    let fullTeamsCount = 0;
+    let freeTeamsCount = 0;
+
+    Object.keys(teamsCache).forEach(tId => {
+      const count = allDriversLocal.filter(d => d.team_id === tId && d.status === 'bestätigt').length;
+      if(count >= 2) fullTeamsCount++;
+      else freeTeamsCount++;
+    });
+
+    const pending = allDriversLocal.filter(d => d.status === 'offen').length;
+    const active = allDriversLocal.filter(d => d.status === 'bestätigt' && d.role === 'stammfahrer').length;
+    const subs = allDriversLocal.filter(d => d.status === 'bestätigt' && d.role === 'ersatzfahrer').length;
+
+    if(document.getElementById('stat-total-teams')) document.getElementById('stat-total-teams').textContent = totalTeams;
+    if(document.getElementById('stat-free-teams')) document.getElementById('stat-free-teams').textContent = freeTeamsCount;
+    if(document.getElementById('stat-pending-drivers')) document.getElementById('stat-pending-drivers').textContent = pending;
+    if(document.getElementById('stat-active-drivers')) document.getElementById('stat-active-drivers').textContent = active;
+    if(document.getElementById('stat-sub-drivers')) document.getElementById('stat-sub-drivers').textContent = subs;
+    if(document.getElementById('stat-full-teams')) document.getElementById('stat-full-teams').textContent = fullTeamsCount;
+  }
+
+  // RENNEN AUS DB ECHTZEIT
+  onSnapshot(collection(db, "races"), (snapshot) => {
+    const dashRaces = document.getElementById('dash-races');
+    const racesGrid = document.getElementById('races-grid');
+    const raceSelect = document.getElementById('race-race');
+
+    let listHtml = '';
+    if(raceSelect) raceSelect.innerHTML = '<option value="">Rennen wählen...</option>';
+
+    snapshot.forEach(docSnap => {
+      const rId = docSnap.id;
+      const r = docSnap.data();
+
+      listHtml += `
+        <div class="race-item">
+          <div class="race-num">${String(r.race_number || 1).padStart(2, '0')}</div>
+          <div class="race-info">
+            <div class="race-name">${r.name}</div>
+            <div class="race-detail">${r.track} — ${r.date}</div>
+          </div>
+          <span class="race-status status-${r.status}">${r.status === 'open' ? 'Anmeldung Offen' : r.status === 'done' ? 'Beendet' : 'Geplant'}</span>
+        </div>
+      `;
+
+      if(raceSelect && r.status === 'open') {
+        const opt = document.createElement('option');
+        opt.value = rId;
+        opt.textContent = `${r.name} – ${r.date}`;
+        raceSelect.appendChild(opt);
+      }
+    });
+
+    if(dashRaces) dashRaces.innerHTML = listHtml;
+    if(racesGrid) racesGrid.innerHTML = listHtml;
+  });
+
+  // RENNANMELDUNG DROPDOWN MIT BESTÄTIGTEN FAHRERN
+  function updateRaceRegistrationDropdown() {
+    const select = document.getElementById('race-driver');
+    if(!select) return;
+    select.innerHTML = '<option value="">Fahrer wählen...</option>';
+    
+    allDriversLocal.filter(d => d.status === 'bestätigt').forEach(d => {
+      const team = teamsCache[d.team_id] || { name: 'Kein Team' };
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = `${d.name} (#${d.driver_number}) – ${team.name}`;
+      select.appendChild(opt);
+    });
+  }
+
+  // RENNANMELDUNG SPEICHERN
+  window.submitRaceReg = async function() {
+    const driverId = document.getElementById('race-driver').value;
+    const raceId = document.getElementById('race-race').value;
+    const attendance = document.getElementById('race-participate').value;
+    const comment = document.getElementById('race-comment').value.trim();
+
+    const sDiv = document.getElementById('race-success');
+    sDiv.style.display = 'none';
+
+    if(!driverId || !raceId) {
+      alert("Bitte wähle einen Fahrer und ein Rennen aus!");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "race_registrations"), {
+        driver_id: driverId,
+        race_id: raceId,
+        attendance,
+        comment,
+        created_at: new Date()
+      });
+      sDiv.style.display = 'block';
+      window.showToast("Anmeldung erfolgreich übertragen!");
+      document.getElementById('race-comment').value = '';
+    } catch(e) {
+      alert("Fehler: " + e.message);
+    }
+  };
+
+  // PROFIL SEITE ANZEIGEN
+  window.viewProfile = function(driverId) {
+    const d = allDriversLocal.find(drv => drv.id === driverId);
+    if(!d) return;
+
+    const profContainer = document.getElementById('profile-content');
+    const team = teamsCache[d.team_id] || { name: 'Kein Team' };
+
+    profContainer.innerHTML = `
+      <div class="profile-top">
+        <div class="profile-avatar">${d.driver_number}</div>
+        <div>
+          <div class="profile-name">${d.name}</div>
+          <div class="profile-discord">${d.discord_name}</div>
+          <div class="profile-badges">
+            <span class="badge badge-free" style="text-transform:uppercase;">${d.role}</span>
+            <span class="badge status-open">${d.platform}</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="info-card">
+          <div class="info-card-title">Fahrer-Lizenzdaten</div>
+          <div class="info-row"><span class="info-key">Team</span><span class="info-val">${team.name}</span></div>
+          <div class="info-row"><span class="info-key">SimRacing Erfahrung</span><span class="info-val">${d.experience || 'Keine Angabe'}</span></div>
+          <div class="info-row"><span class="info-key">Registrierungsstatus</span><span class="info-val" style="color:var(--green)">${d.status}</span></div>
+          <div class="info-row"><span class="info-key">Interner Kommentar</span><span class="info-val" style="font-family:sans-serif; color:var(--text2); font-size:11px;">${d.comment || 'Kein Kommentar'}</span></div>
+        </div>
+        <div class="info-card" style="text-align:center;">
+          <div class="info-card-title">Strafpunkte</div>
+          <div class="penalty-ring">
+            <span class="val">${d.penalty_points}</span>
+            <span class="lbl">AP</span>
+          </div>
+          <div class="info-card-title" style="margin-top:20px; margin-bottom:8px;">Fahrer-Rating</div>
+          <div class="stat-value" style="color:var(--red); font-size:24px;">${d.rating} <span style="font-size:12px; color:var(--text3)">SR</span></div>
+        </div>
+      </div>
+    `;
+
+    showPage('profile', document.querySelector('.nav-links a:nth-child(8)'));
+  };
+
+  // ADMIN DASHBOARD FUNKTIONEN (Zusagen / Ablehnen / Strafpunkte / Löschen)
+  function renderAdminPanels() {
+    const reqBody = document.querySelector('#admin-requests-table tbody');
+    const mngBody = document.querySelector('#admin-mng-table tbody');
+
+    if(!reqBody || !mngBody) return;
+
+    reqBody.innerHTML = '';
+    mngBody.innerHTML = '';
+
+    allDriversLocal.forEach(d => {
+      const team = teamsCache[d.team_id] || { name: 'Unbekannt' };
+
+      if(d.status === 'offen') {
+        // Tabelle 1: Anfragen
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="td-name">${d.name}</td>
+          <td class="td-mono">${d.discord_name}</td>
+          <td>${d.driver_number}</td>
+          <td>${team.name}</td>
+          <td style="text-transform:capitalize;">${d.role}</td>
+          <td class="td-actions">
+            <button class="btn btn-green btn-sm" onclick="updateStatus('${d.id}', 'bestätigt')">✔ Accept</button>
+            <button class="btn btn-red btn-sm" onclick="updateStatus('${d.id}', 'abgelehnt')">❌ Decline</button>
+          </td>
+        `;
+        reqBody.appendChild(tr);
+      } else {
+        // Tabelle 2: Management
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="td-name">${d.name} (#${d.driver_number})</td>
+          <td>${team.name}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" style="padding:2px 6px;" onclick="modPoints('${d.id}', ${d.penalty_points - 1})">-</button>
+            <span class="td-mono" style="margin:0 6px; font-weight:bold; color:var(--yellow);">${d.penalty_points} AP</span>
+            <button class="btn btn-outline btn-sm" style="padding:2px 6px;" onclick="modPoints('${d.id}', ${d.penalty_points + 1})">+</button>
+          </td>
+          <td class="td-mono">${d.rating} SR</td>
+          <td class="td-actions">
+            <button class="btn btn-outline btn-sm" onclick="deleteDriver('${d.id}')">Löschen</button>
+          </td>
+        `;
+        mngBody.appendChild(tr);
+      }
+    });
+  }
+
+  window.updateStatus = async function(id, newStatus) {
+    try {
+      await updateDoc(doc(db, "drivers", id), { status: newStatus });
+      window.showToast(`Status auf ${newStatus} aktualisiert!`);
+    } catch(e) { alert(e.message); }
+  };
+
+  window.modPoints = async function(id, newPoints) {
+    if(newPoints < 0) return;
+    try {
+      await updateDoc(doc(db, "drivers", id), { penalty_points: newPoints });
+      window.showToast("Strafpunkte aktualisiert!");
+    } catch(e) { alert(e.message); }
+  };
+
+  window.deleteDriver = async function(id) {
+    if(!confirm("Möchtest du diesen Fahrer wirklich komplett löschen?")) return;
+    try {
+      await deleteDoc(doc(db, "drivers", id));
+      window.showToast("Fahrer gelöscht.", "error");
+    } catch(e) { alert(e.message); }
+  };
+
+  // INITIALISIERUNG BEIM START
+  async function start() {
+    await initTeams();
+    renderDriversGrid();
+  }
+  start();
+
+</script>
+</body>
+</html>
