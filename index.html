@@ -137,8 +137,6 @@
     font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700;
   }
   .stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
-  .stat-item.alert .stat-value { color: var(--red); }
-  .stat-item.ok .stat-value { color: var(--green); }
  
   /* Section heading */
   .section { padding: 32px 0; }
@@ -163,9 +161,7 @@
   .team-card {
     background: var(--bg2); border: 1px solid var(--border);
     border-radius: 8px; overflow: hidden;
-    transition: border-color 0.15s;
   }
-  .team-card:hover { border-color: var(--border2); }
   .team-card-top {
     display: flex; align-items: center; gap: 10px;
     padding: 12px 14px; border-bottom: 1px solid var(--border);
@@ -208,6 +204,8 @@
   }
   .status-planned { background: rgba(96,96,112,0.3); color: var(--text2); border: 1px solid var(--border2); }
   .status-open { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
+  .status-closed { background: rgba(255,214,0,0.15); color: var(--yellow); border: 1px solid rgba(255,214,0,0.3); }
+  .status-ended { background: rgba(33,150,243,0.15); color: var(--blue); border: 1px solid rgba(33,150,243,0.3); }
  
   /* ─── FORMS ─── */
   .form-card {
@@ -222,7 +220,6 @@
   }
   .form-sub { color: var(--text2); font-size: 13px; margin-bottom: 28px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .form-grid.single { grid-template-columns: 1fr; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group.span2 { grid-column: span 2; }
   label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -231,76 +228,50 @@
     border-radius: 5px; color: var(--text);
     font-family: 'Inter', sans-serif; font-size: 13px;
     padding: 9px 12px; outline: none; width: 100%;
-    transition: border-color 0.15s;
   }
-  input::placeholder, textarea::placeholder { color: var(--text3); }
   input:focus, select:focus, textarea:focus { border-color: var(--red); }
   .form-divider { grid-column: span 2; height: 1px; background: var(--border); margin: 4px 0; }
-  .checkbox-row {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 12px; color: var(--text2); cursor: pointer;
-  }
-  .checkbox-row input[type="checkbox"] {
-    width: 16px; height: 16px; padding: 0; cursor: pointer;
-    accent-color: var(--red);
-  }
-  .checkbox-row a { color: var(--red); text-decoration: none; }
+  .checkbox-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text2); cursor: pointer; }
+  .checkbox-row input { width: 16px; height: 16px; accent-color: var(--red); }
   .form-submit { margin-top: 20px; width: 100%; padding: 13px; font-size: 13px; }
-  .form-error {
-    background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3);
-    border-radius: 5px; padding: 10px 14px;
-    color: var(--red); font-size: 12px; display: none; margin-bottom: 15px;
-  }
-  .form-success {
-    background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3);
-    border-radius: 5px; padding: 10px 14px;
-    color: var(--green); font-size: 12px; display: none; margin-bottom: 15px;
-  }
+  .form-error { background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3); border-radius: 5px; padding: 10px 14px; color: var(--red); font-size: 12px; display: none; margin-bottom: 15px; }
+  .form-success { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); border-radius: 5px; padding: 10px 14px; color: var(--green); font-size: 12px; display: none; margin-bottom: 15px; }
  
-  /* ─── ADMIN DASHBOARD ─── */
-  .table-wrap {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 8px; overflow: hidden; margin-top: 20px;
-  }
-  .table-header {
-    padding: 14px 16px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 12px;
-  }
+  /* ─── ADMIN SUB-TABS ─── */
+  .admin-tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .admin-tab-btn { background: transparent; border: none; color: var(--text2); padding: 8px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
+  .admin-tab-btn:hover { color: var(--text); background: var(--bg4); }
+  .admin-tab-btn.active { background: var(--red); color: white; }
+  .admin-subpage { display: none; }
+  .admin-subpage.active { display: block; }
+
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 15px; }
+  .table-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--bg3); }
   .table-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
   table { width: 100%; border-collapse: collapse; }
-  th {
-    text-align: left; font-size: 10px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--text3); padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg3);
-  }
-  td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  th { text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg4); }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
   .td-name { font-weight: 600; }
   .td-mono { font-family: 'JetBrains Mono', monospace; color: var(--text2); }
   .td-actions { display: flex; gap: 6px; }
 
   /* Drivers display */
   .drivers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .driver-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 16px; position: relative; overflow: hidden;
-  }
-  .driver-num {
-    font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900;
-    color: rgba(255,255,255,0.07); position: absolute; right: 8px; top: 4px;
-  }
+  .driver-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; position: relative; overflow: hidden; }
+  .driver-num { font-family: 'Orbitron', sans-serif; font-size: 36px; font-weight: 900; color: rgba(255,255,255,0.07); position: absolute; right: 8px; top: 4px; }
   .driver-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
   .driver-team { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
- 
   .tc-default { background: #444; color: #fff; }
+
+  /* Auth Lock Overlay */
+  .admin-lock-box { max-width: 400px; margin: 100px auto; background: var(--bg2); border: 1px solid var(--border); padding: 30px; border-radius: 8px; text-align: center; }
 
   @media (max-width: 768px) {
     .teams-grid { grid-template-columns: 1fr; }
     .drivers-grid { grid-template-columns: 1fr 1fr; }
     .form-grid { grid-template-columns: 1fr; }
-    .form-group.span2 { grid-column: span 1; }
     .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .admin-tabs { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -318,7 +289,6 @@
   </div>
   <div class="nav-right">
     <button class="btn btn-outline btn-sm" onclick="showPage('registration',null)">Registrieren</button>
-    <button class="btn btn-red btn-sm" onclick="showPage('race-registration',null)">Rennanmeldung</button>
   </div>
 </nav>
  
@@ -330,12 +300,11 @@
       <p class="hero-sub">Registriere dich als Fahrer, wähle dein Team und starte in die Formula-1 Liga Saison 2026.</p>
       <div class="hero-actions">
         <button class="btn btn-red" onclick="showPage('registration',null)">Jetzt Registrieren</button>
-        <button class="btn btn-outline" onclick="showPage('race-registration',null)">Rennanmeldung</button>
       </div>
       <div class="stats-bar">
         <div class="stat-item"><span class="stat-value" id="stat-total-teams">0</span><span class="stat-label">Teams gesamt</span></div>
-        <div class="stat-item ok"><span class="stat-value" id="stat-free-teams">0</span><span class="stat-label">Freie Plätze</span></div>
-        <div class="stat-item alert"><span class="stat-value" id="stat-pending-drivers">0</span><span class="stat-label">Offene Anfragen</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-free-teams">0</span><span class="stat-label">Freie Plätze</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-pending-drivers">0</span><span class="stat-label">Offene Anfragen</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-active-drivers">0</span><span class="stat-label">Best. Fahrer</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-sub-drivers">0</span><span class="stat-label">Ersatzfahrer</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-full-teams">0</span><span class="stat-label">Volle Teams</span></div>
@@ -356,17 +325,6 @@
 </div>
  
 <div id="page-registration" class="page">
-  <div class="page-header">
-    <div class="container">
-      <div class="page-header-inner">
-        <div class="page-header-icon">🏎</div>
-        <div>
-          <div class="page-header-title">Fahrer-Registrierung</div>
-          <div class="page-header-sub">Melde dich für die Formula-1 Liga Season 2026 an</div>
-        </div>
-      </div>
-    </div>
-  </div>
   <div class="container" style="padding-top:32px; padding-bottom:48px;">
     <div class="form-card">
       <div class="form-title">⬡ Fahrer-Registrierung</div>
@@ -383,7 +341,7 @@
           </div>
           <div class="form-group">
             <label>Discordname *</label>
-            <input type="text" id="reg-discord" placeholder="username#1234">
+            <input type="text" id="reg-discord" placeholder="username">
           </div>
           <div class="form-group">
             <label>Fahrernummer (1–99) *</label>
@@ -403,25 +361,6 @@
               <option value="">Team wählen...</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Erfahrung im Simracing</label>
-            <select id="reg-exp">
-              <option value="">Auswählen...</option>
-              <option value="Einsteiger">Einsteiger (&lt;1 Jahr)</option>
-              <option value="Fortgeschritten">Fortgeschritten (1–3 Jahre)</option>
-              <option value="Erfahren">Erfahren (3–5 Jahre)</option>
-              <option value="Profi">Profi (&gt;5 Jahre)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Plattform</label>
-            <select id="reg-platform">
-              <option value="">Auswählen...</option>
-              <option value="PC">PC</option>
-              <option value="PlayStation 5">PlayStation 5</option>
-              <option value="Xbox Series X/S">Xbox Series X/S</option>
-            </select>
-          </div>
           <div class="form-group span2">
             <label>Kommentar / Bemerkung</label>
             <textarea id="reg-comment" placeholder="Optionale Nachricht an die Ligaleitung..."></textarea>
@@ -436,18 +375,6 @@
         </div>
         <button type="submit" class="btn btn-red form-submit" id="submit-reg-btn">Registrierung Absenden</button>
       </form>
-    </div>
-  </div>
-</div>
-
-<div id="page-race-registration" class="page">
-  <div class="container" style="padding-top:32px;">
-    <div class="form-card">
-      <div class="form-title">🏁 Rennanmeldung</div>
-      <div class="form-sub">Melde dich hier für anstehende Sessions an.</div>
-      <div class="form-grid single">
-         <p style="color: var(--text2);">Modul wird geladen...</p>
-      </div>
     </div>
   </div>
 </div>
@@ -469,52 +396,134 @@
 <div id="page-races" class="page">
   <div class="container" style="padding-top:24px;">
     <h2 style="margin-bottom: 20px; font-family: 'Orbitron'; text-transform: uppercase;">Rennkalender</h2>
-    <div class="race-list">
-       <div class="race-item"><div class="race-num">01</div><div class="race-info"><div class="race-name">Großer Preis von Österreich</div><div class="race-detail">Spielberg • 2026</div></div><span class="race-status status-open">Geplant</span></div>
-    </div>
+    <div class="race-list" id="public-races-list"></div>
   </div>
 </div>
 
 <div id="page-rules" class="page">
   <div class="container" style="padding-top:24px;">
     <h2 style="margin-bottom: 20px; font-family: 'Orbitron'; text-transform: uppercase;">Liga-Regelwerk</h2>
-    <p style="color: var(--text2);">§1 faires Verhalten auf und abseits der Rennstrecke wird vorausgesetzt.</p>
+    <p style="color: var(--text2);">§1 Faires Verhalten auf und abseits der Rennstrecke wird vorausgesetzt.</p>
   </div>
 </div>
 
 <div id="page-admin" class="page">
   <div class="container" style="padding-top:24px;">
-    <h2 style="margin-bottom: 10px; font-family: 'Orbitron'; text-transform: uppercase; color: var(--red);">Admin Kontrollzentrum</h2>
-    <p style="color: var(--text2); margin-bottom: 20px;">Hier kannst du eingehende Fahrerlizenzen verwalten und Fahrer für Teams bestätigen.</p>
     
-    <div class="table-wrap">
-      <div class="table-header">
-        <div class="table-title">Offene Fahrer-Registrierungen</div>
+    <div id="admin-auth-barrier" class="admin-lock-box">
+      <h3 style="font-family: 'Orbitron'; margin-bottom: 10px; color: var(--red);">🔒 Admin Verifizierung</h3>
+      <p style="color: var(--text2); font-size: 12px; margin-bottom: 20px;">Bitte gib deine E-Mail-Adresse ein, um Zugriff auf die Verwaltungsoptionen zu erhalten.</p>
+      <input type="email" id="admin-auth-email" placeholder="admin@liga.de" style="margin-bottom: 15px;">
+      <button class="btn btn-red" style="width:100%" onclick="checkAdminAuth()">Zugang prüfen</button>
+      <p id="admin-auth-error" style="color: var(--red); font-size:12px; margin-top:10px; display:none;">Keine Admin-Rechte für diese E-Mail.</p>
+    </div>
+
+    <div id="admin-main-content" style="display: none;">
+      <h2 style="margin-bottom: 10px; font-family: 'Orbitron'; text-transform: uppercase; color: var(--red);">Admin Kontrollzentrum</h2>
+      
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" onclick="switchAdminTab('requests', this)">Lizenzanfragen</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('all-drivers', this)">Alle Fahrer</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('admin-teams', this)">Teams</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('admin-races', this)">Rennen</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('admin-signups', this)">Rennanmeldungen</button>
+        <button class="admin-tab-btn" onclick="switchAdminTab('activities', this)">Aktivitäten</button>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Fahrer</th>
-            <th>Discord</th>
-            <th>Nummer</th>
-            <th>Gewähltes Team</th>
-            <th>Rolle</th>
-            <th>Aktion</th>
-          </tr>
-        </thead>
-        <tbody id="admin-requests-table">
-          <tr>
-            <td colspan="6" style="text-align: center; color: var(--text3);">Keine offenen Anfragen vorhanden.</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div id="admin-tab-requests" class="admin-subpage active">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Eingehende Lizenzanträge</div></div>
+          <table>
+            <thead>
+              <tr><th>Fahrer</th><th>Discord</th><th>Nummer</th><th>Gewähltes Team</th><th>Rolle</th><th>Aktion</th></tr>
+            </thead>
+            <tbody id="table-requests"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-tab-all-drivers" class="admin-subpage">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Sämtliche registrierte Fahrer</div></div>
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Lizenz</th><th>Strafpunkte</th><th>Aktion</th></tr>
+            </thead>
+            <tbody id="table-all-drivers"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-tab-admin-teams" class="admin-subpage">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Teams verwalten</div></div>
+          <table>
+            <thead>
+              <tr><th>Team-ID / Name</th><th>Status</th><th>Fahrer 1 ID</th><th>Fahrer 2 ID</th><th>Aktion</th></tr>
+            </thead>
+            <tbody id="table-admin-teams"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-tab-admin-races" class="admin-subpage">
+        <div style="background: var(--bg2); padding: 20px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+          <h4 style="font-family:'Orbitron'; margin-bottom:15px; font-size:12px;">Neues Rennen hinzufügen</h4>
+          <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px;">
+            <input type="text" id="add-race-num" placeholder="Nummer (z.B. 01)">
+            <input type="text" id="add-race-name" placeholder="Rennname (z.B. GP von Österreich)">
+            <select id="add-race-status">
+              <option value="Geplant">Geplant</option>
+              <option value="Anmeldung offen">Anmeldung offen</option>
+              <option value="Anmeldung geschlossen">Anmeldung geschlossen</option>
+              <option value="Vorbei">Vorbei</option>
+            </select>
+            <button class="btn btn-red btn-sm" onclick="addNewRace()">Hinzufügen</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Rennkalender verwalten</div></div>
+          <table>
+            <thead>
+              <tr><th>Nr.</th><th>Rennen</th><th>Status-Einstellung</th><th>Aktion</th></tr>
+            </thead>
+            <tbody id="table-admin-races"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-tab-admin-signups" class="admin-subpage">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">Übersicht aller abgegebenen Rennanmeldungen</div></div>
+          <table>
+            <thead>
+              <tr><th>Fahrer-ID / Name</th><th>Rennen</th><th>Status</th><th>Zeitpunkt</th></tr>
+            </thead>
+            <tbody id="table-admin-signups"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-tab-activities" class="admin-subpage">
+        <div class="table-wrap">
+          <div class="table-header"><div class="table-title">System & Admin-Aktivitätsprotokoll</div></div>
+          <table>
+            <thead>
+              <tr><th>Zeitstempel</th><th>Aktivität</th><th>Details</th></tr>
+            </thead>
+            <tbody id="table-admin-logs"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBAO3bYedGDFXfuNObINfhOBZXgBdpHZYo",
@@ -529,11 +538,27 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // ZUGANGSLISTE FÜR ADMINS
+  const ALLOWED_ADMIN_EMAILS = ["admin@liga.de", "leitung@earl.at", "test@test.de"];
+
+  window.checkAdminAuth = function() {
+    const inputEmail = document.getElementById("admin-auth-email").value.trim().toLowerCase();
+    const errorMsg = document.getElementById("admin-auth-error");
+    
+    if(ALLOWED_ADMIN_EMAILS.includes(inputEmail)) {
+      document.getElementById("admin-auth-barrier").style.display = "none";
+      document.getElementById("admin-main-content").style.display = "block";
+      errorMsg.style.display = "none";
+      createAdminLog(`Admin eingeloggt mit E-Mail: ${inputEmail}`);
+    } else {
+      errorMsg.style.display = "block";
+    }
+  };
+
   window.showPage = function(pageId, element) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
     if(targetPage) targetPage.classList.add('active');
-
     if(element) {
       document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
       element.classList.add('active');
@@ -541,22 +566,24 @@
     window.scrollTo(0,0);
   };
 
+  window.switchAdminTab = function(tabId, btn) {
+    document.querySelectorAll('.admin-subpage').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('admin-tab-' + tabId).classList.add('active');
+    btn.classList.add('active');
+  };
+
   const regTeamDropdown = document.getElementById("reg-team");
   const dashTeamsGrid = document.getElementById("dash-teams");
   const teamsDisplayGrid = document.getElementById("teams-display-grid");
   const driversDisplayGrid = document.getElementById("drivers-display-grid");
-  const adminRequestsTable = document.getElementById("admin-requests-table");
-
-  const statTotalTeams = document.getElementById("stat-total-teams");
-  const statFreeTeams = document.getElementById("stat-free-teams");
-  const statPendingDrivers = document.getElementById("stat-pending-drivers");
-  const statActiveDrivers = document.getElementById("stat-active-drivers");
-  const statSubDrivers = document.getElementById("stat-sub-drivers");
-  const statFullTeams = document.getElementById("stat-full-teams");
+  const publicRacesList = document.getElementById("public-races-list");
 
   let localTeamsMap = {};
   let allDriversCached = [];
+  let allRacesCached = [];
 
+  // LIVE SYSTEM INITIATION
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (teamsSnapshot) => {
       localTeamsMap = {};
@@ -564,17 +591,59 @@
       
       teamsSnapshot.forEach(doc => {
         const data = doc.data();
-        localTeamsMap[doc.id] = data; // Jetzt mappen wir das gesamte Datenobjekt des Teams
+        localTeamsMap[doc.id] = { id: doc.id, ...data };
         
         const opt = document.createElement("option");
         opt.value = doc.id;
         opt.textContent = data.name || doc.id;
         regTeamDropdown.appendChild(opt);
       });
-
       syncDriversAndRender();
-    }, (error) => {
-      console.error("Fehler bei Teams-Abfrage: ", error);
+    });
+
+    onSnapshot(collection(db, "races"), (racesSnapshot) => {
+      allRacesCached = [];
+      racesSnapshot.forEach(doc => {
+        allRacesCached.push({ id: doc.id, ...doc.data() });
+      });
+      allRacesCached.sort((a,b) => String(a.num).localeCompare(String(b.num)));
+      renderRacesUI();
+    });
+
+    onSnapshot(collection(db, "renn_anmeldungen"), (snapshot) => {
+      const tbody = document.getElementById("table-admin-signups");
+      if(!tbody) return;
+      if(snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text3);">Keine Rennanmeldungen vorliegend.</td></tr>`;
+        return;
+      }
+      let html = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        html += `<tr>
+          <td class="td-name">${d.realName || d.driverId || 'Unbekannt'}</td>
+          <td>${d.raceName || 'Unbekanntes Rennen'}</td>
+          <td><span class="race-status status-open">${d.status || 'Angemeldet'}</span></td>
+          <td class="td-mono">${d.timestamp ? new Date(d.timestamp.seconds * 1000).toLocaleString() : 'Sofort'}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    });
+
+    onSnapshot(collection(db, "admin_logs"), (snapshot) => {
+      const tbody = document.getElementById("table-admin-logs");
+      if(!tbody) return;
+      let logs = [];
+      snapshot.forEach(doc => { logs.push(doc.data()); });
+      logs.sort((a,b) => b.timestamp - a.timestamp);
+      
+      tbody.innerHTML = logs.map(l => `
+        <tr>
+          <td class="td-mono" style="width:160px;">${l.timestamp ? new Date(l.timestamp.seconds * 1000).toLocaleString() : ''}</td>
+          <td style="color:var(--yellow); font-weight:600;">${l.message}</td>
+          <td class="td-mono" style="color:var(--text3)">Driver: ${l.driverId || '-'} | Team: ${l.teamId || '-'}</td>
+        </tr>
+      `).join('');
     });
   }
 
@@ -582,7 +651,7 @@
     onSnapshot(collection(db, "fahrer"), (driverSnapshot) => {
       let pendingDriversList = [];
       let activeDriversList = [];
-      allDriversCached = []; // Für den Nummern-Check auf der Client-Seite halten wir das aktuell
+      allDriversCached = [];
 
       driverSnapshot.forEach(doc => {
         const d = doc.data();
@@ -598,11 +667,8 @@
 
       renderTeamsUI();
       renderDriversUI(activeDriversList);
-      renderAdminTable(pendingDriversList);
+      renderAdminTables(pendingDriversList, allDriversCached);
       updateDashboardStats(pendingDriversList, activeDriversList);
-
-    }, (error) => {
-      console.error("Fehler bei Fahrer-Abfrage: ", error);
     });
   }
 
@@ -610,8 +676,6 @@
     let html = "";
     Object.keys(localTeamsMap).forEach(teamId => {
       const team = localTeamsMap[teamId];
-      
-      // Sitzplatz-Namen aus den verknüpften IDs auflösen
       const driver1 = allDriversCached.find(d => d.id === team.driverOneId);
       const driver2 = allDriversCached.find(d => d.id === team.driverTwoId);
 
@@ -640,11 +704,6 @@
 
   function renderDriversUI(activeDrivers) {
     if(!driversDisplayGrid) return;
-    if(activeDrivers.length === 0) {
-      driversDisplayGrid.innerHTML = '<div class="empty" style="grid-column: span 4;">Keine bestätigten Fahrer im System.</div>';
-      return;
-    }
-
     driversDisplayGrid.innerHTML = activeDrivers.map(d => {
       const teamObj = localTeamsMap[d.teamId];
       return `
@@ -653,84 +712,128 @@
           <div class="driver-name">${d.realName}</div>
           <div class="driver-team">Team: ${teamObj ? teamObj.name : 'Ersatz'}</div>
           <div class="driver-team" style="color: var(--accent); text-transform: uppercase; font-size: 9px; font-weight: bold;">${d.role || 'Fahrer'}</div>
-        </div>
-      `;
+        </div>`;
     }).join('');
   }
 
-  function renderAdminTable(pendingDrivers) {
-    if(pendingDrivers.length === 0) {
-      adminRequestsTable.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text3);">Keine offenen Lizenzen zu prüfen.</td></tr>`;
-      return;
-    }
+  function renderRacesUI() {
+    if(!publicRacesList) return;
+    let html = "";
+    let adminHtml = "";
+    
+    allRacesCached.forEach(r => {
+      let statusClass = "status-planned";
+      if(r.status === "Anmeldung offen") statusClass = "status-open";
+      if(r.status === "Anmeldung geschlossen") statusClass = "status-closed";
+      if(r.status === "Vorbei") statusClass = "status-ended";
 
-    adminRequestsTable.innerHTML = pendingDrivers.map(d => {
-      const teamObj = localTeamsMap[d.teamId];
-      return `
+      html += `
+        <div class="race-item">
+          <div class="race-num">${r.num}</div>
+          <div class="race-info"><div class="race-name">${r.name}</div><div class="race-detail">Saison 2026</div></div>
+          <span class="race-status ${statusClass}">${r.status}</span>
+        </div>`;
+
+      adminHtml += `
+        <tr>
+          <td class="td-mono">${r.num}</td>
+          <td class="td-name" id="race-name-text-${r.id}">${r.name}</td>
+          <td>
+            <select id="race-status-select-${r.id}" onchange="updateRaceStatusInline('${r.id}', this.value)">
+              <option value="Geplant" ${r.status==='Geplant'?'selected':''}>Geplant</option>
+              <option value="Anmeldung offen" ${r.status==='Anmeldung offen'?'selected':''}>Anmeldung offen</option>
+              <option value="Anmeldung geschlossen" ${r.status==='Anmeldung geschlossen'?'selected':''}>Anmeldung geschlossen</option>
+              <option value="Vorbei" ${r.status==='Vorbei'?'selected':''}>Vorbei</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="editRaceNameInline('${r.id}')">✏️ Edit</button>
+            <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="deleteRaceInline('${r.id}')">Löschen</button>
+          </td>
+        </tr>`;
+    });
+    publicRacesList.innerHTML = html || "<p style='color:var(--text3);'>Keine Termine eingetragen.</p>";
+    document.getElementById("table-admin-races").innerHTML = adminHtml;
+  }
+
+  function renderAdminTables(pending, allDrivers) {
+    // 1. ANFRAGEN
+    const tReq = document.getElementById("table-requests");
+    if(pending.length === 0) {
+      tReq.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text3);">Keine offenen Lizenzen zu prüfen.</td></tr>`;
+    } else {
+      tReq.innerHTML = pending.map(d => `
         <tr>
           <td class="td-name">${d.realName}</td>
-          <td class="td-mono">${d.discordName}</td>
-          <td class="td-mono">#${d.driverNumber || '00'}</td>
-          <td>${teamObj ? teamObj.name : 'Keines (Ersatz)'}</td>
-          <td style="text-transform: uppercase; font-size: 11px; color: var(--yellow);">${d.role || 'Stamm'}</td>
+          <td>${d.discordName}</td>
+          <td class="td-mono">#${d.driverNumber}</td>
+          <td>${localTeamsMap[d.teamId] ? localTeamsMap[d.teamId].name : 'Ersatz'}</td>
+          <td>${d.role}</td>
           <td class="td-actions">
-            <button class="btn btn-green btn-sm" id="approve-${d.id}">Annehmen</button>
-            <button class="btn btn-outline btn-sm" id="reject-${d.id}" style="color: var(--red); border-color: var(--red-dim);">Löschen</button>
+            <button class="btn btn-green btn-sm" onclick="confirmDriverLicense('${d.id}')">Annehmen</button>
+            <button class="btn btn-outline btn-sm" onclick="editDriverInline('${d.id}')">Bearbeiten</button>
+            <button class="btn btn-outline btn-sm" style="color:var(--red);" onclick="deleteDriverRecord('${d.id}')">Löschen</button>
           </td>
-        </tr>
-      `;
-    }).join('');
+        </tr>`).join('');
+    }
 
-    pendingDrivers.forEach(d => {
-      document.getElementById(`approve-${d.id}`).addEventListener('click', () => confirmDriverLicense(d.id));
-      document.getElementById(`reject-${d.id}`).addEventListener('click', () => deleteDriverRecord(d.id));
-    });
+    // 2. ALLE FAHRER
+    document.getElementById("table-all-drivers").innerHTML = allDrivers.map(d => `
+      <tr>
+        <td class="td-name">${d.realName}</td>
+        <td>${d.discordName}</td>
+        <td class="td-mono">#${d.driverNumber}</td>
+        <td>${d.role}</td>
+        <td><span style="color:${d.licenseStatus==='Bestätigt'? 'var(--green)':'var(--yellow)'}">${d.licenseStatus}</span></td>
+        <td class="td-mono">${d.penaltyPoints || 0} HP</td>
+        <td><button class="btn btn-outline btn-sm" onclick="editDriverInline('${d.id}')">✏️ Edit</button></td>
+      </tr>`).join('');
+
+    // 3. TEAMS ADMIN
+    document.getElementById("table-admin-teams").innerHTML = Object.keys(localTeamsMap).map(id => {
+      const t = localTeamsMap[id];
+      return `
+        <tr>
+          <td class="td-name">${t.name || id}</td>
+          <td><span style="color:${t.status==='Voll'?'var(--red)':'var(--green)'}">${t.status || 'Frei'}</span></td>
+          <td class="td-mono">${t.driverOneId || 'unbesetzt'}</td>
+          <td class="td-mono">${t.driverTwoId || 'unbesetzt'}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="editTeamInline('${t.id}')">✏️ Edit</button></td>
+        </tr>`;
+    }).join('');
   }
 
   function updateDashboardStats(pending, active) {
-    const totalTeamsCount = Object.keys(localTeamsMap).length;
-    statTotalTeams.textContent = totalTeamsCount;
+    statTotalTeams.textContent = Object.keys(localTeamsMap).length;
     statPendingDrivers.textContent = pending.length;
     statActiveDrivers.textContent = active.filter(f => f.role === "Stammfahrer").length;
     statSubDrivers.textContent = active.filter(f => f.role === "Ersatzfahrer").length;
 
-    let fullTeams = 0;
-    let freeSlots = 0;
-
+    let fullTeams = 0, freeSlots = 0;
     Object.keys(localTeamsMap).forEach(id => {
       const team = localTeamsMap[id];
-      let slotsOccupied = 0;
-      if(team.driverOneId) slotsOccupied++;
-      if(team.driverTwoId) slotsOccupied++;
-      
-      if(team.status === "Voll" || slotsOccupied >= 2) fullTeams++;
-      freeSlots += (2 - slotsOccupied);
+      let occupied = 0;
+      if(team.driverOneId) occupied++;
+      if(team.driverTwoId) occupied++;
+      if(team.status === "Voll" || occupied >= 2) fullTeams++;
+      freeSlots += (2 - occupied);
     });
-
     statFullTeams.textContent = fullTeams;
     statFreeTeams.textContent = freeSlots < 0 ? 0 : freeSlots;
   }
 
-  // Hilfsfunktion für Logs
+  // LOG-HELPER
   async function createAdminLog(message, driverId = null, teamId = null) {
     try {
-      await addDoc(collection(db, "admin_logs"), {
-        message: message,
-        driverId: driverId,
-        teamId: teamId,
-        timestamp: new Date()
-      });
-    } catch (e) {
-      console.error("Log-Erstellung fehlgeschlagen:", e);
-    }
+      await addDoc(collection(db, "admin_logs"), { message, driverId, teamId, timestamp: new Date() });
+    } catch (e) { console.error(e); }
   }
 
-  // REGISTRATION LOGIC
+  // REGISTRATION PROCESS
   document.getElementById("submit-reg-btn").addEventListener("click", async () => {
     const errorDiv = document.getElementById("reg-error");
     const successDiv = document.getElementById("reg-success");
-    errorDiv.style.display = "none";
-    successDiv.style.display = "none";
+    errorDiv.style.display = "none"; successDiv.style.display = "none";
 
     const data = {
       realName: document.getElementById("reg-name").value.trim(),
@@ -743,31 +846,21 @@
     };
 
     try {
-      // Validierungen aus deiner Vorgabe
       if (!data.realName) throw "Name ist Pflicht";
       if (!data.discordName) throw "Discordname ist Pflicht";
       if (!data.driverNumber) throw "Fahrernummer ist Pflicht";
       if (!data.acceptRules) throw "Regelwerk muss akzeptiert werden";
 
-      // driverNumberExists(data.driverNumber)
-      const numberExists = allDriversCached.some(d => d.driverNumber === data.driverNumber);
-      if (numberExists) {
+      if (allDriversCached.some(d => d.driverNumber === data.driverNumber)) {
         throw "Diese Fahrernummer ist bereits vergeben";
       }
 
       if (data.role === "Stammfahrer") {
         if (!data.teamId) throw "Team muss ausgewählt werden";
-
-        // getTeam(data.teamId)
         const team = localTeamsMap[data.teamId];
-        if (!team) throw "Ausgewähltes Team existiert nicht";
-
-        if (team.status === "Voll") {
-          throw "Dieses Team ist bereits voll";
-        }
+        if (team && team.status === "Voll") throw "Dieses Team ist bereits voll";
       }
 
-      // createDriver(...)
       await addDoc(collection(db, "fahrer"), {
         realName: data.realName,
         discordName: data.discordName,
@@ -783,35 +876,29 @@
         registriertAm: new Date()
       });
 
-      // createAdminLog(...)
       await createAdminLog("Neue Fahrer-Lizenzanfrage erstellt");
-
       successDiv.style.display = "block";
       document.getElementById("main-reg-form").reset();
-      window.scrollTo(0, 0);
-
+      window.scrollTo(0,0);
     } catch (error) {
-      console.error(error);
-      errorDiv.textContent = typeof error === "string" ? error : `Fehler beim Speichern: ${error.message}`;
+      errorDiv.textContent = typeof error === "string" ? error : error.message;
       errorDiv.style.display = "block";
-      window.scrollTo(0, 0);
+      window.scrollTo(0,0);
     }
   });
 
-  // ADMIN CONFIRM LICENSE
-  async function confirmDriverLicense(driverId) {
+  // CONFIRM LICENSE
+  window.confirmDriverLicense = async function(driverId) {
     try {
-      // getDriver(driverId)
       const driver = allDriversCached.find(d => d.id === driverId);
-      if (!driver) throw "Fahrer nicht im System gefunden.";
+      if (!driver) throw "Fahrer nicht gefunden.";
 
       driver.licenseStatus = "Bestätigt";
       driver.active = true;
 
       if (driver.role === "Stammfahrer" && driver.teamId) {
-        // getTeam(driver.teamId)
         const team = localTeamsMap[driver.teamId];
-        if (!team) throw "Team des Fahrers nicht gefunden.";
+        if (!team) throw "Team nicht gefunden.";
 
         if (!team.driverOneId) {
           team.driverOneId = driver.id;
@@ -821,13 +908,8 @@
           throw "Team ist bereits voll";
         }
 
-        // updateTeamStatus(team) + saveTeam(team)
-        let teamSlotsOccupied = 0;
-        if(team.driverOneId) teamSlotsOccupied++;
-        if(team.driverTwoId) teamSlotsOccupied++;
-        if (teamSlotsOccupied >= 2) {
-          team.status = "Voll";
-        }
+        let occupied = (team.driverOneId ? 1 : 0) + (team.driverTwoId ? 1 : 0);
+        if (occupied >= 2) team.status = "Voll";
 
         await updateDoc(doc(db, "teams", driver.teamId), {
           driverOneId: team.driverOneId || null,
@@ -836,34 +918,87 @@
         });
       }
 
-      // saveDriver(driver)
-      await updateDoc(doc(db, "fahrer", driverId), {
-        licenseStatus: "Bestätigt",
-        active: true
-      });
-
-      // createAdminLog(...)
+      await updateDoc(doc(db, "fahrer", driverId), { licenseStatus: "Bestätigt", active: true });
       await createAdminLog("Fahrer-Lizenz bestätigt", driver.id, driver.teamId);
-      
-      alert(`Fahrer ${driver.realName} erfolgreich freigeschaltet!`);
-
+      alert("Lizenz erfolgreich freigeschaltet!");
     } catch (error) {
-      console.error(error);
-      alert(typeof error === "string" ? error : `Fehler beim Bestätigen: ${error.message}`);
+      alert(error);
     }
-  }
+  };
 
-  async function deleteDriverRecord(id) {
-    if(confirm("Möchtest du diese Anmeldung wirklich verwerfen und unwiderruflich löschen?")) {
-      try {
-        await deleteDoc(doc(db, "fahrer", id));
-        await createAdminLog("Fahrer-Lizenzanfrage gelöscht/abgelehnt", id);
-      } catch (e) {
-        console.error(e);
-        alert("Löschen fehlgeschlagen.");
-      }
+  // EDIT METHODS
+  window.editDriverInline = async function(id) {
+    const d = allDriversCached.find(item => item.id === id);
+    if(!d) return;
+    const newName = prompt("Fahrer/Echter Name:", d.realName);
+    const newNum = prompt("Startnummer (1-99):", d.driverNumber);
+    const newPts = prompt("Strafpunkte / Lizenzpunkte:", d.penaltyPoints || 0);
+    
+    if(newName && newNum) {
+      await updateDoc(doc(db, "fahrer", id), {
+        realName: newName,
+        driverNumber: newNum,
+        penaltyPoints: parseInt(newPts) || 0
+      });
+      await createAdminLog(`Fahrerdaten editiert für ID: ${id}`);
     }
-  }
+  };
+
+  window.editTeamInline = async function(id) {
+    const t = localTeamsMap[id];
+    const newName = prompt("Team Name:", t.name || id);
+    const d1 = prompt("Fahrer 1 ID (leer lassen für unbesetzt):", t.driverOneId || "");
+    const d2 = prompt("Fahrer 2 ID (leer lassen für unbesetzt):", t.driverTwoId || "");
+    const status = prompt("Status (Frei / Voll):", t.status || "Frei");
+
+    await setDoc(doc(db, "teams", id), {
+      name: newName,
+      driverOneId: d1.trim() || null,
+      driverTwoId: d2.trim() || null,
+      status: status
+    }, { merge: true });
+    await createAdminLog(`Team editiert: ${id}`);
+  };
+
+  window.addNewRace = async function() {
+    const num = document.getElementById("add-race-num").value.trim();
+    const name = document.getElementById("add-race-name").value.trim();
+    const status = document.getElementById("add-race-status").value;
+
+    if(!num || !name) { alert("Bitte Nummer und Rennbezeichnung eintragen."); return; }
+    await addDoc(collection(db, "races"), { num, name, status });
+    await createAdminLog(`Neues Rennen angelegt: ${name}`);
+    document.getElementById("add-race-num").value = "";
+    document.getElementById("add-race-name").value = "";
+  };
+
+  window.updateRaceStatusInline = async function(id, newStatus) {
+    await updateDoc(doc(db, "races", id), { status: newStatus });
+    await createAdminLog(`Rennstatus geändert für ID ${id} auf: ${newStatus}`);
+  };
+
+  window.editRaceNameInline = async function(id) {
+    const race = allRacesCached.find(r => r.id === id);
+    const newName = prompt("Rennbezeichnung ändern:", race ? race.name : "");
+    if(newName) {
+      await updateDoc(doc(db, "races", id), { name: newName });
+      await createAdminLog(`Rennname geändert für ID ${id}`);
+    }
+  };
+
+  window.deleteRaceInline = async function(id) {
+    if(confirm("Dieses Rennen löschen?")) {
+      await deleteDoc(doc(db, "races", id));
+      await createAdminLog(`Rennen gelöscht ID: ${id}`);
+    }
+  };
+
+  window.deleteDriverRecord = async function(id) {
+    if(confirm("Anmeldung ablehnen und löschen?")) {
+      await deleteDoc(doc(db, "fahrer", id));
+      await createAdminLog("Fahrerlizenz abgelehnt & gelöscht", id);
+    }
+  };
 
   initLiveSystem();
 </script>
