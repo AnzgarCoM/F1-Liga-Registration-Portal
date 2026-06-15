@@ -237,7 +237,7 @@
   .form-error { background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3); border-radius: 5px; padding: 10px 14px; color: var(--red); font-size: 12px; display: none; margin-bottom: 15px; }
   .form-success { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); border-radius: 5px; padding: 10px 14px; color: var(--green); font-size: 12px; display: none; margin-bottom: 15px; }
  
-  /* ─── ADMIN SUB-TABS ─── */
+  /* ─── ADMIN PANEL ─── */
   .admin-tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
   .admin-tab-btn { background: transparent; border: none; color: var(--text2); padding: 8px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: all 0.15s; }
   .admin-tab-btn:hover { color: var(--text); background: var(--bg4); }
@@ -253,7 +253,6 @@
   td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
   .td-name { font-weight: 600; }
   .td-mono { font-family: 'JetBrains Mono', monospace; color: var(--text2); }
-  .td-actions { display: flex; gap: 6px; }
 
   /* Drivers display */
   .drivers-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -263,15 +262,50 @@
   .driver-team { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
   .tc-default { background: #444; color: #fff; }
 
-  /* Auth Lock Overlay */
+  /* Auth Lock Box */
   .admin-lock-box { max-width: 400px; margin: 100px auto; background: var(--bg2); border: 1px solid var(--border); padding: 30px; border-radius: 8px; text-align: center; }
+
+  /* ─── CARD LAYOUTS (REGELWERK / FAQ / PROFILE) ─── */
+  .info-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; margin-bottom: 12px;
+  }
+  .info-card h3 { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text); margin-bottom: 6px; }
+  .info-card p { color: var(--text2); font-size: 12.5px; line-height: 1.5; }
+
+  /* FAQ Accordion */
+  .faq-item {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 8px; overflow: hidden;
+  }
+  .faq-trigger {
+    width: 100%; text-align: left; background: transparent; border: none;
+    padding: 14px 20px; color: var(--text); font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq-trigger:hover { background: var(--bg3); }
+  .faq-trigger::after { content: '▾'; color: var(--text3); font-size: 14px; }
+  .faq-item.active .faq-trigger::after { content: '▴'; color: var(--red); }
+  .faq-content { display: none; padding: 14px 20px; background: rgba(0,0,0,0.15); border-top: 1px solid var(--border); color: var(--text2); font-size: 12.5px; line-height: 1.5; }
+  .faq-item.active .faq-content { display: block; }
+
+  /* Profil Grid Layout */
+  .profile-grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 800px; margin: 0 auto; }
+  .profile-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+  .profile-box-title { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .profile-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+  .profile-data-item { display: flex; flex-direction: column; gap: 4px; }
+  .profile-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .profile-value { font-size: 13.5px; font-weight: 500; color: var(--text); }
+  .badge-confirmed { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-block; }
 
   @media (max-width: 768px) {
     .teams-grid { grid-template-columns: 1fr; }
     .drivers-grid { grid-template-columns: 1fr 1fr; }
     .form-grid { grid-template-columns: 1fr; }
     .stats-bar { grid-template-columns: repeat(3, 1fr); }
-    .admin-tabs { flex-wrap: wrap; }
+    .profile-data-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -285,6 +319,8 @@
     <a onclick="showPage('teams',this)">Teams</a>
     <a onclick="showPage('races',this)">Rennen</a>
     <a onclick="showPage('rules',this)">Regelwerk</a>
+    <a onclick="showPage('faq',this)">FAQ</a>
+    <a onclick="showPage('profile',this)">Mein Profil</a>
     <a onclick="showPage('admin',this)">Admin</a>
   </div>
   <div class="nav-right">
@@ -401,9 +437,155 @@
 </div>
 
 <div id="page-rules" class="page">
-  <div class="container" style="padding-top:24px;">
-    <h2 style="margin-bottom: 20px; font-family: 'Orbitron'; text-transform: uppercase;">Liga-Regelwerk</h2>
-    <p style="color: var(--text2);">§1 Faires Verhalten auf und abseits der Rennstrecke wird vorausgesetzt.</p>
+  <div class="container" style="padding-top:24px; padding-bottom:48px;">
+    <h2 style="margin-bottom: 20px; font-family: 'Orbitron'; text-transform: uppercase; color: var(--red);">🛞 LIGA-REGELWERK</h2>
+    
+    <div class="info-card">
+      <h3>1. Allgemeine Regeln</h3>
+      <p>Alle Fahrer müssen sich fair und respektvoll verhalten. Beleidigungen, Rassismus oder unsportliches Verhalten führen zum Ausschluss aus der Liga.</p>
+    </div>
+    <div class="info-card">
+      <h3>2. Registrierung</h3>
+      <p>Jeder Fahrer muss sich über das Registrierungsformular anmelden. Die Fahrer-Lizenz muss vom Admin-Team bestätigt werden, bevor der Fahrer an Rennen teilnehmen darf.</p>
+    </div>
+    <div class="info-card">
+      <h3>3. Fahrernummer</h3>
+      <p>Jeder Fahrer wählt bei der Registrierung eine einzigartige Nummer zwischen 1 und 99. Diese Nummer kann nur vom Admin geändert werden.</p>
+    </div>
+    <div class="info-card">
+      <h3>4. Teams</h3>
+      <p>Ein Team besteht aus maximal 2 Stammfahrern. Teams werden nach der Reihenfolge der Registrierung gefüllt. Volle Teams können nicht mehr gewählt werden.</p>
+    </div>
+    <div class="info-card">
+      <h3>5. Ersatzfahrer</h3>
+      <p>Ersatzfahrer haben keine feste Teamzugehörigkeit. Sie können sich auf freie Plätze bewerben, die vom Admin freigegeben wurden. Nach dem Rennen werden Ersatzfahrer automatisch wieder als „ohne Team“ geführt.</p>
+    </div>
+    <div class="info-card">
+      <h3>6. Rennanmeldung</h3>
+      <p>Für jedes Rennen muss eine Anmeldung erfolgen. Die Anmeldefrist wird vom Admin festgelegt. Fehlende Anmeldung kann zu Strafpunkte führen.</p>
+    </div>
+    <div class="info-card">
+      <h3>7. Strafpunkte</h3>
+      <p>Strafpunkte werden vom Admin-Team vergeben. Ab 12 Strafpunkten erhält der Fahrer eine Rennsperre. Ab 25 Punkten droht der Ligaausschluss.</p>
+    </div>
+    <div class="info-card">
+      <h3>8. Fahrerwertung</h3>
+      <p>Jeder Fahrer erhält eine Wertung von 1–100. Diese wird vom Admin-Team vergeben und dient zur Einschätzung des Fahrerlevels. 1–30: Anfänger, 31–60: Fortgeschritten, 61–80: Stark, 81–100: Topfahrer.</p>
+    </div>
+    <div class="info-card">
+      <h3>9. Kommunikation</h3>
+      <p>Die offizielle Kommunikation erfolgt über Discord. Jeder Fahrer muss im Liga-Discord-Server sein und erreichbar sein.</p>
+    </div>
+    <div class="info-card">
+      <h3>10. Änderungen</h3>
+      <p>Die Ligaleitung behält sich vor, das Regelwerk jederzeit anzupassen. Änderungen werden im Discord angekündigt.</p>
+    </div>
+  </div>
+</div>
+
+<div id="page-faq" class="page">
+  <div class="container" style="padding-top:24px; padding-bottom:48px;">
+    <h2 style="margin-bottom: 8px; font-family: 'Orbitron'; text-transform: uppercase;">💬 FAQ</h2>
+    <p style="color: var(--text2); font-size:13px; margin-bottom: 24px;">Häufig gestellte Fragen rund um die Liga-Registrierung und Teilnahme.</p>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Wie registriere ich mich?</button>
+        <div class="faq-content">Klicke oben rechts auf "Registrierung" und fülle das Formular vollständig aus. Gib deinen Namen, Discord-Namen, Fahrernummer und gewünschtes Team an. Nach dem Absenden wird deine Fahrer-Lizenz vom Admin-Team geprüft.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Wie bekomme ich eine Fahrer-Lizenz?</button>
+        <div class="faq-content">Nach deiner Registrierung wird automatisch eine Lizenzanfrage erstellt. Das Admin-Team prüft deine Angaben und bestätigt oder lehnt die Anfrage ab. Sobald deine Lizenz bestätigt ist, bist du offiziell Teil der Liga.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Wie wähle ich ein Team?</button>
+        <div class="faq-content">Bei der Registrierung kannst du ein verfügbares Team wählen. Teams, die bereits 2 Stammfahrer haben, sind als Voll markiert und nicht mehr auswählbar. Wenn du dich als Ersatzfahrer registrierst, ist die Teamwahl optional.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Wie funktioniert die Ersatzfahrer-Anmeldung?</button>
+        <div class="faq-content">Ersatzfahrer haben kein festes Team. Wenn ein Team einen Ersatzfahrer benötigt, wird dies vom Admin markiert. Du kannst dich dann über die Rennanmeldung für dieses Team bewerben. Der Admin bestätigt den Einsatz.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Wann bin ich offiziell bestätigt?</button>
+        <div class="faq-content">Du bist offiziell bestätigt, sobald ein Admin deine Fahrer-Lizenz genehmigt hat. Du erhältst dann den Status Bestätigt und kannst dich für Rennen anmelden.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Kann ich mein Team wechseln?</button>
+        <div class="faq-content">Teamwechsel sind nur über das Admin-Team möglich. Kontaktiere die Ligaleitung über Discord, wenn du einen Teamwechsel wünschst.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Was passiert bei Strafpunkten?</button>
+        <div class="faq-content">Strafpunkte werden für Regelverstöße vergeben. Ab 12 Strafpunkten erhältst du eine Rennsperre. Ab 25 Punkten droht der Ligaausschluss. Die Strafpunkte werden im Profil angezeigt.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">Was bedeutet die Fahrerwertung?</button>
+        <div class="faq-content">Die Fahrerwertung ist eine Einschätzung von 1-100 durch das Admin-Team. 1-30: Anfänger, 31-60: Fortgeschritten, 61-80: Stark, 81-100: Topfahrer. Sie dient zur Liga-Einteilung.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-profile" class="page">
+  <div class="container" style="padding-top:24px; padding-bottom:48px;">
+    <h2 style="margin-bottom: 24px; font-family: 'Orbitron'; text-transform: uppercase; display: flex; align-items: center; gap: 10px;">👤 MEIN PROFIL</h2>
+    
+    <div class="profile-grid">
+      <div class="profile-box">
+        <div class="profile-box-title" style="color: var(--text);">Account</div>
+        <div class="profile-data-grid">
+          <div class="profile-data-item">
+            <span class="profile-label">Name</span>
+            <span class="profile-value">Anzgar Wolf</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">E-Mail</span>
+            <span class="profile-value">anzgarwolf@gmail.com</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Rolle</span>
+            <span class="profile-value" style="color: var(--red); font-weight:600;">admin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-box">
+        <div class="profile-box-title" style="color: var(--red);">Fahrer-Lizenz</div>
+        <div class="profile-data-grid">
+          <div class="profile-data-item">
+            <span class="profile-label">Fahrername</span>
+            <span class="profile-value">Anzgar Wolf</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Discord</span>
+            <span class="profile-value">AnzgarCoM</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Fahrernummer</span>
+            <span class="profile-value">#33</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Team</span>
+            <span class="profile-value">Audi F1 Team</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Rolle</span>
+            <span class="profile-value">Stammfahrer</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Lizenzstatus</span>
+            <div><span class="badge-confirmed">Bestätigt</span></div>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Fahrerwertung</span>
+            <span class="profile-value">76/100 (Stark)</span>
+          </div>
+          <div class="profile-data-item">
+            <span class="profile-label">Strafpunkte</span>
+            <span class="profile-value" style="color: var(--yellow);">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -412,10 +594,10 @@
     
     <div id="admin-auth-barrier" class="admin-lock-box">
       <h3 style="font-family: 'Orbitron'; margin-bottom: 10px; color: var(--red);">🔒 Admin Verifizierung</h3>
-      <p style="color: var(--text2); font-size: 12px; margin-bottom: 20px;">Bitte gib deine E-Mail-Adresse ein, um Zugriff auf die Verwaltungsoptionen zu erhalten.</p>
-      <input type="email" id="admin-auth-email" placeholder="leagueaustrianracing@gmail.com" style="margin-bottom: 15px;">
+      <p style="color: var(--text2); font-size: 12px; margin-bottom: 20px;">Bitte gib dein Admin-Passwort/E-Mail ein, um Zugriff auf das Kontrollzentrum zu erhalten.</p>
+      <input type="password" id="admin-auth-email" placeholder="••••••••••••••••••••" style="margin-bottom: 15px; letter-spacing: 0.2em;">
       <button class="btn btn-red" style="width:100%" onclick="checkAdminAuth()">Zugang prüfen</button>
-      <p id="admin-auth-error" style="color: var(--red); font-size:12px; margin-top:10px; display:none;">Keine Admin-Rechte für diese E-Mail.</p>
+      <p id="admin-auth-error" style="color: var(--red); font-size:12px; margin-top:10px; display:none;">Verifizierung fehlgeschlagen. Keine Rechte vorhanden.</p>
     </div>
 
     <div id="admin-main-content" style="display: none;">
@@ -538,10 +720,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ZUGANGSLISTE FÜR ADMINS
   const ALLOWED_ADMIN_EMAILS = ["leagueaustrianracing@gmail.com"];
 
-  // Variablen für die Statistiken deklarieren
   const statTotalTeams = document.getElementById("stat-total-teams");
   const statFreeTeams = document.getElementById("stat-free-teams");
   const statPendingDrivers = document.getElementById("stat-pending-drivers");
@@ -549,6 +729,13 @@
   const statSubDrivers = document.getElementById("stat-sub-drivers");
   const statFullTeams = document.getElementById("stat-full-teams");
 
+  // FAQ Toggle Logic
+  window.toggleFaq = function(button) {
+    const item = button.parentElement;
+    item.classList.toggle('active');
+  };
+
+  // Secure Admin Authentication (input masked)
   window.checkAdminAuth = function() {
     const inputEmail = document.getElementById("admin-auth-email").value.trim().toLowerCase();
     const errorMsg = document.getElementById("admin-auth-error");
@@ -557,7 +744,7 @@
       document.getElementById("admin-auth-barrier").style.display = "none";
       document.getElementById("admin-main-content").style.display = "block";
       errorMsg.style.display = "none";
-      createAdminLog(`Admin eingeloggt mit E-Mail: ${inputEmail}`);
+      createAdminLog(`Admin Login erfolgreich über Maskierung.`);
     } else {
       errorMsg.style.display = "block";
     }
@@ -591,7 +778,6 @@
   let allDriversCached = [];
   let allRacesCached = [];
 
-  // LIVE SYSTEM INITIATION
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (teamsSnapshot) => {
       localTeamsMap = {};
@@ -891,7 +1077,6 @@
     }
   });
 
-  // CONFIRM LICENSE
   window.confirmDriverLicense = async function(driverId) {
     try {
       const driver = allDriversCached.find(d => d.id === driverId);
@@ -930,7 +1115,6 @@
     }
   };
 
-  // EDIT METHODS
   window.editDriverInline = async function(id) {
     const d = allDriversCached.find(item => item.id === id);
     if(!d) return;
