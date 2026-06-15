@@ -233,7 +233,7 @@
       <button class="btn btn-red" onclick="showPage('registration',null)">Jetzt Registrieren</button>
       <div class="stats-bar">
         <div class="stat-item"><span class="stat-value" id="stat-total-teams">0</span><span class="stat-label">Teams</span></div>
-        <div class="stat-item"><span class="stat-value" id="stat-free-teams">0</span><span class="stat-label">Frei</span></div>
+        <div class="stat-item"><span class="stat-value" id="stat-free-teams">22</span><span class="stat-label">Frei (Plätze)</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-pending-drivers">0</span><span class="stat-label">Offen</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-active-drivers">0</span><span class="stat-label">Stamm</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-sub-drivers">0</span><span class="stat-label">Ersatz</span></div>
@@ -277,7 +277,10 @@
 </div>
 
 <div id="page-races" class="page">
-  <div class="container" style="padding-top:20px;"><div class="race-list" id="public-races-list"></div></div>
+  <div class="container" style="padding-top:20px;">
+    <div class="section-head"><div class="section-title">Rennkalender & Anmeldung</div><div class="section-line"></div></div>
+    <div class="race-list" id="public-races-list"></div>
+  </div>
 </div>
 
 <div id="page-profile" class="page">
@@ -320,7 +323,7 @@
           <input type="text" id="add-team-name" placeholder="Team Name (z.B. Ferrari)" style="margin-bottom: 8px;">
           <button class="btn btn-red" style="width:100%;" onclick="addNewTeam()">Team erstellen</button>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Team Name</th><th>Fahrer 1</th><th>Fahrer 2</th><th>Aktionen</th></tr></thead><tbody id="table-admin-teams"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Team Name</th><th>Fahrer 1</th><th>Fahrern 2</th><th>Aktionen</th></tr></thead><tbody id="table-admin-teams"></tbody></table></div>
       </div>
       
       <div id="admin-tab-admin-races" class="admin-subpage">
@@ -460,37 +463,51 @@
         }
       });
       
-      // Update Counter Metrics
+      // Update Counter Metrics & Dynamischer Runterzähler (Start bei 22 Plätzen)
       document.getElementById("stat-pending-drivers").textContent = pending.length;
       document.getElementById("stat-active-drivers").textContent = activeCount;
       document.getElementById("stat-sub-drivers").textContent = subCount;
+      
+      let freeSlotsCalculated = 22 - activeCount;
+      document.getElementById("stat-free-teams").textContent = freeSlotsCalculated < 0 ? 0 : freeSlotsCalculated;
 
       renderTeamsLayouts();
       renderAdminDriversLists(pending);
+      renderPublicDriversGrid();
       
       const cachedId = localStorage.getItem("my_driver_id");
       if(cachedId) updateProfilePage(cachedId);
     });
   }
 
-  // RESTRUKTURIERTE LOGIK: Holt die Fahrer direkt live aus der fahrer-Collection anhand der teamId!
+  // LIGA FAHRER SEITE BEFÜLLEN
+  function renderPublicDriversGrid() {
+    const grid = document.getElementById("drivers-display-grid");
+    if(grid) {
+      grid.innerHTML = allDriversCached.filter(d => d.licenseStatus === "Bestätigt").map(d => `
+        <div class="driver-card">
+          <div class="driver-num">${d.driverNumber}</div>
+          <div class="driver-name">${d.realName}</div>
+          <div class="driver-team">${localTeamsMap[d.teamId]?.name || 'Ersatz / Unbekannt'} (${d.role})</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // TEAMS LOGIK (DASHBOARD & TEAMS REITER)
   function renderTeamsLayouts() {
     let fullTeamsCount = 0;
-    let freeTeamsCount = 0;
     const teamIDs = Object.keys(localTeamsMap);
     document.getElementById("stat-total-teams").textContent = teamIDs.length;
 
     let html = teamIDs.map(id => {
       const t = localTeamsMap[id];
-      
-      // Filter alle bestätigten Stammfahrer, die für dieses Team gemeldet sind
       const teamDrivers = allDriversCached.filter(d => d.teamId === id && d.licenseStatus === "Bestätigt" && d.role === "Stammfahrer");
       
       const d1 = teamDrivers[0] ? teamDrivers[0].realName : 'Frei';
       const d2 = teamDrivers[1] ? teamDrivers[1].realName : 'Frei';
 
       if(teamDrivers.length >= 2) fullTeamsCount++;
-      if(teamDrivers.length === 0) freeTeamsCount++;
 
       return `<div class="team-card">
         <div class="team-card-top">
@@ -505,8 +522,6 @@
     }).join('');
 
     document.getElementById("stat-full-teams").textContent = fullTeamsCount;
-    document.getElementById("stat-free-teams").textContent = freeTeamsCount;
-
     document.getElementById("dash-teams").innerHTML = html;
     if(document.getElementById("teams-display-grid")) document.getElementById("teams-display-grid").innerHTML = html;
   }
@@ -532,7 +547,7 @@
 
     document.getElementById("table-admin-teams").innerHTML = Object.keys(localTeamsMap).map(key => {
       let t = localTeamsMap[key];
-      const teamDrivers = allDriversCached.filter(d => d.teamId === key);
+      const teamDrivers = allDriversCached.filter(d => d.teamId === key && d.licenseStatus === "Bestätigt");
       const d1Name = teamDrivers[0] ? `${teamDrivers[0].realName} (#${teamDrivers[0].driverNumber})` : 'Unbesetzt';
       const d2Name = teamDrivers[1] ? `${teamDrivers[1].realName} (#${teamDrivers[1].driverNumber})` : 'Unbesetzt';
       
@@ -546,15 +561,27 @@
     }).join('');
   }
 
+  // CALENDAR WITH LIVE SIGNUP BUTTONS
   function renderRaces() {
     const list = document.getElementById("public-races-list");
     if(list) {
-      list.innerHTML = allRacesCached.map(r => `
-        <div class="race-item">
-          <div class="race-left"><div class="race-num">${r.num}</div><div><div class="race-name">${r.name}</div></div></div>
-          <span class="race-status status-open">${r.status}</span>
-        </div>
-      `).join('');
+      list.innerHTML = allRacesCached.map(r => {
+        let isActionable = (r.status === "Anmeldung offen");
+        let btnHtml = isActionable ? `<button class="btn btn-red btn-sm" onclick="signUpForRace('${r.id}', '${r.name}')">Anmelden</button>` : '';
+        
+        return `
+          <div class="race-item">
+            <div class="race-left">
+              <div class="race-num">${r.num}</div>
+              <div><div class="race-name">${r.name}</div></div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span class="race-status status-open" style="background:${isActionable?'rgba(0,200,83,0.15)':'rgba(96,96,112,0.3)'}; color:${isActionable?'var(--green)':'var(--text2)'}; border-color:${isActionable?'var(--green)':'var(--border2)'}">${r.status}</span>
+              ${btnHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     document.getElementById("table-admin-races").innerHTML = allRacesCached.map(r => `
@@ -567,6 +594,28 @@
       </tr>
     `).join('');
   }
+
+  // DRIVER SIGN UP SUBMISSION
+  window.signUpForRace = async function(raceId, raceName) {
+    let defaultDriverName = "";
+    const cachedId = localStorage.getItem("my_driver_id");
+    if(cachedId) {
+      const activeDriver = allDriversCached.find(x => x.id === cachedId);
+      if(activeDriver) defaultDriverName = activeDriver.realName;
+    }
+
+    let driverName = prompt("Gib deinen Fahrernamen ein, um dich für das Rennen anzumelden:", defaultDriverName);
+    if(!driverName || driverName.trim() === "") return alert("Anmeldung abgebrochen oder Name ungültig.");
+
+    await addDoc(collection(db, "anmeldungen"), {
+      raceId: raceId,
+      raceName: raceName,
+      driverName: driverName.trim(),
+      status: "Angemeldet"
+    });
+
+    alert(`Erfolgreich für das Rennen ${raceName} angemeldet!`);
+  };
 
   function updateProfilePage(id) {
     const d = allDriversCached.find(x => x.id === id);
@@ -611,7 +660,7 @@
     }
   };
 
-  // COMPLETE SYSTEM EDITING CONTROLS VIA PROMPTS
+  // EDIT ACTIONS
   window.editDriver = function(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
