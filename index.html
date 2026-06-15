@@ -58,7 +58,6 @@
   }
   .nav-logo span { color: var(--text); }
   
-  /* Desktop Links */
   .nav-links {
     display: flex; align-items: center; gap: 2px; height: 100%;
   }
@@ -76,13 +75,11 @@
   
   .nav-right { display: flex; align-items: center; gap: 12px; }
 
-  /* Hamburger Menu Button */
   .menu-toggle {
     display: none; background: transparent; border: none;
     color: var(--text); font-size: 20px; cursor: pointer; padding: 4px;
   }
 
-  /* Mobile Navigation Drawer */
   .mobile-menu {
     position: fixed; top: 52px; left: 0; right: 0; bottom: 0;
     background: var(--bg); border-top: 1px solid var(--border);
@@ -261,8 +258,9 @@
   .profile-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; }
   .profile-value { font-size: 13px; font-weight: 500; color: var(--text); }
   .badge-confirmed { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 700; display: inline-block; }
+  .badge-pending { background: rgba(255,214,0,0.15); color: var(--yellow); border: 1px solid rgba(255,214,0,0.3); padding: 2px 8px; border-radius: 100px; font-size: 10px; font-weight: 700; display: inline-block; }
 
-  /* ─── MEDIA QUERIES (RESPONSIVE ENGINE) ─── */
+  /* ─── RESPONSIVE ENGINE ─── */
   @media (max-width: 1024px) {
     .nav-links { display: none; }
     .menu-toggle { display: block; }
@@ -365,23 +363,23 @@
       <div id="reg-error" class="form-error" style="background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3); border-radius: 5px; padding: 10px 14px; color: var(--red); font-size: 12px; display: none; margin-bottom: 15px;"></div>
       <div id="reg-success" class="form-success" style="background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); border-radius: 5px; padding: 10px 14px; color: var(--green); font-size: 12px; display: none; margin-bottom: 15px;">✓ Registrierung erfolgreich!</div>
       
-      <form id="main-reg-form" onsubmit="event.preventDefault();">
+      <form id="main-reg-form">
         <div class="form-grid">
           <div class="form-group">
             <label>Fahrername / Echter Name *</label>
-            <input type="text" id="reg-name" placeholder="Max Mustermann">
+            <input type="text" id="reg-name" placeholder="Max Mustermann" required>
           </div>
           <div class="form-group">
             <label>Discordname *</label>
-            <input type="text" id="reg-discord" placeholder="username">
+            <input type="text" id="reg-discord" placeholder="username" required>
           </div>
           <div class="form-group">
             <label>Fahrernummer (1–99) *</label>
-            <input type="number" id="reg-number" placeholder="z.B. 44" min="1" max="99">
+            <input type="number" id="reg-number" placeholder="z.B. 44" min="1" max="99" required>
           </div>
           <div class="form-group">
             <label>Rolle *</label>
-            <select id="reg-role">
+            <select id="reg-role" required>
               <option value="">Rolle wählen...</option>
               <option value="Stammfahrer">Stammfahrer</option>
               <option value="Ersatzfahrer">Ersatzfahrer</option>
@@ -389,7 +387,7 @@
           </div>
           <div class="form-group span2">
             <label>Team-Auswahl *</label>
-            <select id="reg-team">
+            <select id="reg-team" required>
               <option value="">Team wählen...</option>
             </select>
           </div>
@@ -400,7 +398,7 @@
           <div class="form-divider"></div>
           <div class="form-group span2">
             <label class="checkbox-row">
-              <input type="checkbox" id="reg-rules">
+              <input type="checkbox" id="reg-rules" required>
               <span>Ich akzeptiere das Liga-Regelwerk und die Teilnahmebedingungen.</span>
             </label>
           </div>
@@ -439,13 +437,6 @@
       <div class="info-card"><h3>1. Allgemeine Regeln</h3><p>Alle Fahrer müssen sich fair und respektvoll verhalten. Beleidigungen, Rassismus oder unsportliches Verhalten führen zum Ausschluss aus der Liga.</p></div>
       <div class="info-card"><h3>2. Registrierung</h3><p>Jeder Fahrer muss sich über das Registrierungsformular anmelden. Die Fahrer-Lizenz muss vom Admin-Team bestätigt werden, bevor der Fahrer an Rennen teilnehmen darf.</p></div>
       <div class="info-card"><h3>3. Fahrernummer</h3><p>Jeder Fahrer wählt bei der Registrierung eine einzigartige Nummer zwischen 1 und 99. Diese Nummer kann nur vom Admin geändert werden.</p></div>
-      <div class="info-card"><h3>4. Teams</h3><p>Ein Team besteht aus maximal 2 Stammfahrern. Teams werden nach der Reihenfolge der Registrierung gefüllt. Volle Teams können nicht mehr gewählt werden.</p></div>
-      <div class="info-card"><h3>5. Ersatzfahrer</h3><p>Ersatzfahrer haben keine feste Teamzugehörigkeit. Sie können sich auf freie Plätze bewerben, die vom Admin freigegeben wurden.</p></div>
-      <div class="info-card"><h3>6. Rennanmeldung</h3><p>Für jedes Rennen muss eine Anmeldung erfolgen. Die Anmeldefrist wird vom Admin festgelegt. Fehlende Anmeldung kann zu Strafpunkte führen.</p></div>
-      <div class="info-card"><h3>7. Strafpunkte</h3><p>Strafpunkte werden vom Admin-Team vergeben. Ab 12 Strafpunkten erhält der Fahrer eine Rennsperre. Ab 25 Punkten droht der Ligaausschluss.</p></div>
-      <div class="info-card"><h3>8. Fahrerwertung</h3><p>Jeder Fahrer erhält eine Wertung von 1–100. Diese wird vom Admin-Team vergeben und dient zur Einschätzung des Fahrerlevels.</p></div>
-      <div class="info-card"><h3>9. Kommunikation</h3><p>Die offizielle Kommunikation erfolgt über Discord. Jeder Fahrer muss im Liga-Discord-Server sein und erreichbar sein.</p></div>
-      <div class="info-card"><h3>10. Änderungen</h3><p>Die Ligaleitung behält sich vor, das Regelwerk jederzeit anzupassen. Änderungen werden im Discord angekündigt.</p></div>
     </div>
   </div>
 </div>
@@ -454,12 +445,8 @@
   <div class="container" style="padding-top:20px; padding-bottom:32px;">
     <h2 style="margin-bottom: 4px; font-family: 'Orbitron'; text-transform: uppercase;">💬 FAQ</h2>
     <p style="color: var(--text2); font-size:13px; margin-bottom: 16px;">Häufig gestellte Fragen rund um die Liga-Registrierung.</p>
-
     <div class="faq-list">
       <div class="faq-item"><button class="faq-trigger" onclick="toggleFaq(this)">Wie registriere ich mich?</button><div class="faq-content">Klicke auf "Registrierung" und fülle das Formular aus. Nach dem Absenden wird deine Fahrer-Lizenz vom Admin-Team geprüft.</div></div>
-      <div class="faq-item"><button class="faq-trigger" onclick="toggleFaq(this)">Wie bekomme ich eine Fahrer-Lizenz?</button><div class="faq-content">Das Admin-Team prüft deine Angaben nach Absenden des Formulars und schaltet dein Profil frei.</div></div>
-      <div class="faq-item"><button class="faq-trigger" onclick="toggleFaq(this)">Wie wähle ich ein Team?</button><div class="faq-content">Bei der Registrierung kannst du ein freies Team wählen. Teams mit bereits 2 Stammfahrern sind gesperrt.</div></div>
-      <div class="faq-item"><button class="faq-trigger" onclick="toggleFaq(this)">Wie funktioniert die Ersatzfahrer-Anmeldung?</button><div class="faq-content">Ersatzfahrer haben kein festes Team und können einspringen, wenn Stammfahrer ausfallen.</div></div>
     </div>
   </div>
 </div>
@@ -467,27 +454,9 @@
 <div id="page-profile" class="page">
   <div class="container" style="padding-top:20px; padding-bottom:32px;">
     <h2 style="margin-bottom: 16px; font-family: 'Orbitron'; text-transform: uppercase;">👤 MEIN PROFIL</h2>
-    <div class="profile-grid">
-      <div class="profile-box">
-        <div class="profile-box-title" style="color: var(--text);">Account</div>
-        <div class="profile-data-grid">
-          <div class="profile-data-item"><span class="profile-label">Name</span><span class="profile-value">Anzgar Wolf</span></div>
-          <div class="profile-data-item"><span class="profile-label">E-Mail</span><span class="profile-value">anzgarwolf@gmail.com</span></div>
-          <div class="profile-data-item"><span class="profile-label">Rolle</span><span class="profile-value" style="color: var(--red); font-weight:600;">admin</span></div>
-        </div>
-      </div>
-      <div class="profile-box">
-        <div class="profile-box-title" style="color: var(--red);">Fahrer-Lizenz</div>
-        <div class="profile-data-grid">
-          <div class="profile-data-item"><span class="profile-label">Fahrername</span><span class="profile-value">Anzgar Wolf</span></div>
-          <div class="profile-data-item"><span class="profile-label">Discord</span><span class="profile-value">AnzgarCoM</span></div>
-          <div class="profile-data-item"><span class="profile-label">Fahrernummer</span><span class="profile-value">#33</span></div>
-          <div class="profile-data-item"><span class="profile-label">Team</span><span class="profile-value">Audi F1 Team</span></div>
-          <div class="profile-data-item"><span class="profile-label">Rolle</span><span class="profile-value">Stammfahrer</span></div>
-          <div class="profile-data-item"><span class="profile-label">Lizenzstatus</span><div><span class="badge-confirmed">Bestätigt</span></div></div>
-          <div class="profile-data-item"><span class="profile-label">Fahrerwertung</span><span class="profile-value">76/100 (Stark)</span></div>
-          <div class="profile-data-item"><span class="profile-label">Strafpunkte</span><span class="profile-value" style="color: var(--yellow);">0</span></div>
-        </div>
+    <div class="profile-grid" id="profile-content-container">
+      <div class="profile-box" style="text-align: center;">
+        <p style="color: var(--text2);">Keine aktiven Registrierungsdaten gefunden. Bitte fülle zuerst das Registrierungsformular aus.</p>
       </div>
     </div>
   </div>
@@ -509,32 +478,11 @@
         <button class="admin-tab-btn active" onclick="switchAdminTab('requests', this)">Lizenzanfragen</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('all-drivers', this)">Alle Fahrer</button>
         <button class="admin-tab-btn" onclick="switchAdminTab('admin-teams', this)">Teams</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('admin-races', this)">Rennen</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('admin-signups', this)">Anmeldungen</button>
-        <button class="admin-tab-btn" onclick="switchAdminTab('activities', this)">Logs</button>
       </div>
 
       <div id="admin-tab-requests" class="admin-subpage active"><div class="table-wrap"><table><thead><tr><th>Fahrer</th><th>Discord</th><th>Nummer</th><th>Team</th><th>Rolle</th><th>Aktion</th></tr></thead><tbody id="table-requests"></tbody></table></div></div>
       <div id="admin-tab-all-drivers" class="admin-subpage"><div class="table-wrap"><table><thead><tr><th>Name</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Lizenz</th><th>Punkte</th><th>Aktion</th></tr></thead><tbody id="table-all-drivers"></tbody></table></div></div>
       <div id="admin-tab-admin-teams" class="admin-subpage"><div class="table-wrap"><table><thead><tr><th>Team</th><th>Status</th><th>Fahrer 1</th><th>Fahrer 2</th><th>Aktion</th></tr></thead><tbody id="table-admin-teams"></tbody></table></div></div>
-      
-      <div id="admin-tab-admin-races" class="admin-subpage">
-        <div style="background: var(--bg2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px;">
-          <div style="display:flex; flex-direction: column; gap:10px;">
-            <input type="text" id="add-race-num" placeholder="Nummer (z.B. 01)">
-            <input type="text" id="add-race-name" placeholder="Rennname">
-            <select id="add-race-status">
-              <option value="Geplant">Geplant</option>
-              <option value="Anmeldung offen">Anmeldung offen</option>
-            </select>
-            <button class="btn btn-red" onclick="addNewRace()">Rennen Hinzufügen</button>
-          </div>
-        </div>
-        <div class="table-wrap"><table><thead><tr><th>Nr.</th><th>Rennen</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="table-admin-races"></tbody></table></div>
-      </div>
-      
-      <div id="admin-tab-admin-signups" class="admin-subpage"><div class="table-wrap"><table><thead><tr><th>Fahrer</th><th>Rennen</th><th>Status</th><th>Zeitpunkt</th></tr></thead><tbody id="table-admin-signups"></tbody></table></div></div>
-      <div id="admin-tab-activities" class="admin-subpage"><div class="table-wrap"><table><thead><tr><th>Zeit</th><th>Aktivität</th><th>Details</th></tr></thead><tbody id="table-admin-logs"></tbody></table></div></div>
     </div>
   </div>
 </div>
@@ -556,19 +504,18 @@
   const db = getFirestore(app);
   const ALLOWED_ADMIN_EMAILS = ["leagueaustrianracing@gmail.com"];
 
-  // Responsive Drawer Logic
+  // State Management
+  let localTeamsMap = {};
+  let allDriversCached = [];
+  let currentRegisteredUser = null; 
+
   window.toggleMobileMenu = function() {
     document.getElementById("mobile-drawer").classList.toggle("open");
   };
 
   window.handleMobileNav = function(pageId) {
     document.getElementById("mobile-drawer").classList.remove("open");
-    // Update active visual state for mobile drawer links
     document.querySelectorAll('.mobile-menu a').forEach(a => a.classList.remove('active'));
-    const mobileLinks = document.querySelectorAll('.mobile-menu a');
-    mobileLinks.forEach(link => {
-      if(link.getAttribute('onclick').includes(pageId)) link.classList.add('active');
-    });
     showPage(pageId, null);
   };
 
@@ -605,10 +552,41 @@
     btn.classList.add('active');
   };
 
-  // Minimalistisches Live-Daten Handling zum Rendering der Ansichten
-  let localTeamsMap = {};
-  let allDriversCached = [];
-  let allRacesCached = [];
+  // Form Submission & Local Linkage for "Mein Profil"
+  document.getElementById("main-reg-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const errorDiv = document.getElementById("reg-error");
+    const successDiv = document.getElementById("reg-success");
+    
+    errorDiv.style.display = "none";
+    successDiv.style.display = "none";
+
+    const driverData = {
+      realName: document.getElementById("reg-name").value.trim(),
+      discordName: document.getElementById("reg-discord").value.trim(),
+      driverNumber: parseInt(document.getElementById("reg-number").value),
+      role: document.getElementById("reg-role").value,
+      teamId: document.getElementById("reg-team").value,
+      comment: document.getElementById("reg-comment").value.trim(),
+      licenseStatus: "Offen",
+      penaltyPoints: 0,
+      rating: "Ausstehend"
+    };
+
+    try {
+      const docRef = await addDoc(collection(db, "fahrer"), driverData);
+      
+      // Speichert die ID lokal im Browser ab, um das Profil dieses Nutzers live anzuzeigen
+      localStorage.setItem("my_driver_id", docRef.id);
+      
+      successDiv.style.display = "block";
+      document.getElementById("main-reg-form").reset();
+      updateProfilePage(docRef.id);
+    } catch (err) {
+      errorDiv.textContent = "Fehler beim Speichern: " + err.message;
+      errorDiv.style.display = "block";
+    }
+  });
 
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (teamsSnapshot) => {
@@ -624,13 +602,6 @@
       });
       syncDrivers();
     });
-
-    onSnapshot(collection(db, "races"), (snapshot) => {
-      allRacesCached = [];
-      snapshot.forEach(doc => { allRacesCached.push({ id: doc.id, ...doc.data() }); });
-      allRacesCached.sort((a,b) => String(a.num).localeCompare(String(b.num)));
-      renderRaces();
-    });
   }
 
   function syncDrivers() {
@@ -638,16 +609,51 @@
       allDriversCached = [];
       let pending = [];
       let active = [];
+      
       snapshot.forEach(doc => {
         const d = { id: doc.id, ...doc.data() };
         allDriversCached.push(d);
         if(d.licenseStatus === "Offen") pending.push(d);
         if(d.licenseStatus === "Bestätigt") active.push(d);
       });
+      
       renderTeams();
       renderDrivers(active);
       renderAdmin(pending);
+      
+      // Aktualisiert das Live-Profil falls eine ID im Browser-Cache existiert
+      const cachedId = localStorage.getItem("my_driver_id");
+      if(cachedId) {
+        updateProfilePage(cachedId);
+      }
     });
+  }
+
+  function updateProfilePage(driverId) {
+    const container = document.getElementById("profile-content-container");
+    const driver = allDriversCached.find(d => d.id === driverId);
+    
+    if(!driver) return;
+
+    const statusBadge = driver.licenseStatus === "Bestätigt" 
+      ? `<span class="badge-confirmed">Bestätigt</span>` 
+      : `<span class="badge-pending">In Prüfung</span>`;
+
+    container.innerHTML = `
+      <div class="profile-box">
+        <div class="profile-box-title" style="color: var(--red);">Deine Fahrer-Lizenz</div>
+        <div class="profile-data-grid">
+          <div class="profile-data-item"><span class="profile-label">Fahrername</span><span class="profile-value">${driver.realName}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Discord</span><span class="profile-value">${driver.discordName}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Fahrernummer</span><span class="profile-value">#${driver.driverNumber}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Team</span><span class="profile-value">${localTeamsMap[driver.teamId]?.name || 'Kein Team gewählt'}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Rolle</span><span class="profile-value">${driver.role}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Lizenzstatus</span><div>${statusBadge}</div></div>
+          <div class="profile-data-item"><span class="profile-label">Fahrerwertung</span><span class="profile-value">${driver.rating || 'Ausstehend'}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Strafpunkte</span><span class="profile-value" style="color: var(--yellow);">${driver.penaltyPoints || 0}</span></div>
+        </div>
+      </div>
+    `;
   }
 
   function renderTeams() {
@@ -670,7 +676,6 @@
         </div>`;
     });
     document.getElementById("dash-teams").innerHTML = html;
-    if(document.getElementById("teams-display-grid")) document.getElementById("teams-display-grid").innerHTML = html;
   }
 
   function renderDrivers(active) {
@@ -685,24 +690,10 @@
     `).join('');
   }
 
-  function renderRaces() {
-    const list = document.getElementById("public-races-list");
-    if(!list) return;
-    list.innerHTML = allRacesCached.map(r => `
-      <div class="race-item">
-        <div class="race-left">
-          <div class="race-num">${r.num}</div>
-          <div class="race-info"><div class="race-name">${r.name}</div><div class="race-detail">Saison 2026</div></div>
-        </div>
-        <span class="race-status ${r.status==='Anmeldung offen'?'status-open':'status-planned'}">${r.status}</span>
-      </div>
-    `).join('');
-  }
-
   function renderAdmin(pending) {
     document.getElementById("table-requests").innerHTML = pending.map(d => `
       <tr>
-        <td class="td-name">${d.realName}</td>
+        <td>${d.realName}</td>
         <td>${d.discordName}</td>
         <td>#${d.driverNumber}</td>
         <td>${localTeamsMap[d.teamId]?.name || 'Ersatz'}</td>
@@ -713,7 +704,7 @@
 
     document.getElementById("table-all-drivers").innerHTML = allDriversCached.map(d => `
       <tr>
-        <td class="td-name">${d.realName}</td>
+        <td>${d.realName}</td>
         <td>${d.discordName}</td>
         <td>#${d.driverNumber}</td>
         <td>${d.role}</td>
