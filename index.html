@@ -143,7 +143,11 @@
   .race-left { display: flex; align-items: center; gap: 16px; }
   .race-num { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; color: var(--border2); width: 28px; }
   .race-name { font-size: 13.5px; font-weight: 600; }
-  .race-status { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; }
+  .race-status { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; border: 1px solid transparent; }
+  
+  /* NEU: Styles für die Anmelde-Indikatoren am Rennen */
+  .race-signup-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; background: rgba(0, 200, 83, 0.15); color: var(--green); border: 1px solid rgba(0, 200, 83, 0.4); display: inline-flex; align-items: center; gap: 4px; }
+  .race-signup-list-preview { font-size: 11px; color: var(--text2); margin-top: 4px; font-style: italic; display: block; }
  
   /* FORMS */
   .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; max-width: 640px; margin: 0 auto; }
@@ -272,9 +276,7 @@
           <div class="form-group"><label>Discord *</label><input type="text" id="reg-discord" required></div>
           <div class="form-group"><label>Nummer *</label><input type="number" id="reg-number" min="1" max="99" required></div>
           <div class="form-group"><label>Rolle *</label><select id="reg-role" required><option value="Stammfahrer">Stammfahrer</option><option value="Ersatzfahrer">Ersatzfahrer</option></select></div>
-          
           <div class="form-group span2"><label>Division *</label><select id="reg-division" onchange="filterTeamsBySelectedDivision()" required><option value="1">Division 1</option><option value="2">Division 2</option></select></div>
-          
           <div class="form-group span2"><label>Team *</label><select id="reg-team" required></select></div>
         </div>
         <button type="submit" class="btn btn-red form-submit" style="margin-top:15px;">Absenden</button>
@@ -373,7 +375,7 @@
       <div id="admin-tab-admin-teams" class="admin-subpage">
         <div style="background: var(--bg2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px; max-width: 400px;">
           <h4 style="margin-bottom: 10px; font-family:'Orbitron';">Neues Team hinzufügen</h4>
-          <input type="text" id="add-team-name" placeholder="Team Name (z.B. Ferrari)" style="margin-bottom: 8px;">
+          <input type="text" id="add-team-name" placeholder="Team Name" style="margin-bottom: 8px;">
           <select id="add-team-division" style="margin-bottom: 8px;"><option value="1">Division 1</option><option value="2">Division 2</option></select>
           <button class="btn btn-red" style="width:100%;" onclick="addNewTeam()">Team erstellen</button>
         </div>
@@ -416,7 +418,6 @@
   const db = getFirestore(app);
   const ALLOWED_ADMIN_EMAILS = ["leagueaustrianracing@gmail.com"];
 
-  // Aktive Filterzustände für die Reiter (standardmäßig Division 1)
   let currentDashboardDivision = '1';
   let currentDriversDivision = '1';
   let currentTeamsDivision = '1';
@@ -425,6 +426,7 @@
   let localTeamsMap = {};
   let allDriversCached = [];
   let allRacesCached = [];
+  let allSignupsCached = []; // NEU: Lokaler Cache für alle Rennanmeldungen
 
   window.toggleMobileMenu = function() { document.getElementById("mobile-drawer").classList.toggle("open"); };
   window.handleMobileNav = function(pageId) { document.getElementById("mobile-drawer").classList.remove("open"); showPage(pageId, null); };
@@ -436,6 +438,9 @@
       document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
       element.classList.add('active');
     }
+    // Falls die Team- oder Rennübersichten geladen werden, rendern wir neu um den synchronen Status zu wahren
+    if(pageId === 'dashboard' || pageId === 'teams') renderTeamsLayouts();
+    if(pageId === 'races') renderRaces();
   };
 
   window.checkAdminAuth = function() {
@@ -452,7 +457,6 @@
     btn.classList.add('active');
   };
 
-  // DIVISION REITER SWITCHER FUNKTIONEN
   window.switchDashboardDivision = function(divNum) {
     currentDashboardDivision = divNum;
     document.querySelectorAll('#page-dashboard .div-tab').forEach(b => b.classList.remove('active'));
@@ -483,7 +487,6 @@
     renderRaces();
   };
 
-  // Formular-Teams basierend auf der ausgewählten Division filtern
   window.filterTeamsBySelectedDivision = function() {
     const selectedDiv = document.getElementById("reg-division").value;
     const dropdown = document.getElementById("reg-team");
@@ -491,7 +494,6 @@
     
     Object.keys(localTeamsMap).forEach(id => {
       const team = localTeamsMap[id];
-      // Wenn das Feld 'division' im Team fehlt, wird es standardmäßig als Div 1 behandelt
       const teamDiv = team.division || "1";
       if(teamDiv === selectedDiv) {
         let opt = document.createElement("option");
@@ -522,7 +524,7 @@
     filterTeamsBySelectedDivision();
   });
 
-  // SUBMIT RACE SIGNUP FROM DROPDOWNS
+  // SUBMIT RACE SIGNUP
   document.getElementById("race-signup-form").addEventListener("submit", async function(e) {
     e.preventDefault();
     const driverSelect = document.getElementById("signup-driver-select");
@@ -551,9 +553,7 @@
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (snap) => {
       localTeamsMap = {};
-      snap.forEach(d => {
-        localTeamsMap[d.id] = { id: d.id, ...d.data() };
-      });
+      snap.forEach(d => { localTeamsMap[d.id] = { id: d.id, ...d.data() }; });
       filterTeamsBySelectedDivision();
       syncDrivers();
     });
@@ -566,9 +566,12 @@
     });
 
     onSnapshot(collection(db, "anmeldungen"), (snap) => {
+      allSignupsCached = [];
       let html = "";
       snap.forEach(d => {
         let entry = d.data();
+        allSignupsCached.push({ id: d.id, ...entry });
+        
         html += `<tr>
           <td>${entry.driverName || 'Unbekannt'}</td>
           <td>${entry.raceName || 'Rennen'}</td>
@@ -580,6 +583,7 @@
         </tr>`;
       });
       document.getElementById("table-admin-signups").innerHTML = html;
+      renderRaces(); // Wenn neue Anmeldungen kommen, aktualisieren wir den Rennkalender sofort
     });
   }
 
@@ -604,34 +608,26 @@
     });
   }
 
-  // UPDATES THE DRIVER DROPDOWN IN THE SIGNUP FORM
   function updateDriverDropdown() {
     const driverSelect = document.getElementById("signup-driver-select");
     if(!driverSelect) return;
-    
     const approvedDrivers = allDriversCached.filter(d => d.licenseStatus === "Bestätigt");
-    
     if(approvedDrivers.length === 0) {
       driverSelect.innerHTML = '<option value="">-- Keine bestätigten Fahrer gefunden --</option>';
       return;
     }
-
     driverSelect.innerHTML = '<option value="">-- Wähle deinen Namen aus --</option>' + 
       approvedDrivers.map(d => `<option value="${d.realName}">${d.realName} (Div ${d.division || '1'} - #${d.driverNumber})</option>`).join('');
   }
 
-  // UPDATES THE RACES DROPDOWN IN THE SIGNUP FORM
   function updateRaceDropdown() {
     const raceSelect = document.getElementById("signup-race-select");
     if(!raceSelect) return;
-
     const openRaces = allRacesCached.filter(r => r.status === "Anmeldung offen");
-
     if(openRaces.length === 0) {
       raceSelect.innerHTML = '<option value="">-- Keine offenen Anmeldungen vorhanden --</option>';
       return;
     }
-
     raceSelect.innerHTML = '<option value="">-- Wähle das Rennen aus --</option>' +
       openRaces.map(r => `<option value="${r.id}">${r.num} - ${r.name} (Div ${r.division || '1'})</option>`).join('');
   }
@@ -639,10 +635,7 @@
   function renderPublicDriversGrid() {
     const grid = document.getElementById("drivers-display-grid");
     if(!grid) return;
-
-    // Filter nach aktiver Reiterauswahl
     const filteredDrivers = allDriversCached.filter(d => d.licenseStatus === "Bestätigt" && (d.division || "1") === currentDriversDivision);
-
     grid.innerHTML = filteredDrivers.map(d => `
       <div class="driver-card">
         <div class="driver-num">${d.driverNumber}</div>
@@ -653,10 +646,7 @@
   }
 
   function renderTeamsLayouts() {
-    // Bestimme, welche Division geladen werden soll, je nachdem, welche Seite gerade aktiv ist
     const activePageDiv = document.getElementById("page-dashboard").classList.contains("active") ? currentDashboardDivision : currentTeamsDivision;
-
-    // Zähler für die Statistiken (nur für die aktive Division)
     let activeCount = 0;
     let subCount = 0;
     let fullTeamsCount = 0;
@@ -674,7 +664,6 @@
     let html = teamIDs.map(id => {
       const t = localTeamsMap[id];
       const teamDrivers = allDriversCached.filter(d => d.teamId === id && d.licenseStatus === "Bestätigt" && d.role === "Stammfahrer");
-      
       const d1 = teamDrivers[0] ? teamDrivers[0].realName : 'Frei';
       const d2 = teamDrivers[1] ? teamDrivers[1].realName : 'Frei';
 
@@ -692,12 +681,10 @@
       </div>`;
     }).join('');
 
-    // Metriken auf die UI übertragen
     document.getElementById("stat-active-drivers").textContent = activeCount;
     document.getElementById("stat-sub-drivers").textContent = subCount;
     document.getElementById("stat-full-teams").textContent = fullTeamsCount;
     
-    // In einer 11-Team Struktur gibt es maximal 22 Cockpits
     let maxSeats = teamIDs.length * 2;
     let freeSlotsCalculated = maxSeats - activeCount;
     document.getElementById("stat-free-teams").textContent = freeSlotsCalculated < 0 ? 0 : freeSlotsCalculated;
@@ -706,57 +693,45 @@
     if(document.getElementById("teams-display-grid")) document.getElementById("teams-display-grid").innerHTML = html;
   }
 
-  function renderAdminDriversLists(pending) {
-    document.getElementById("table-requests").innerHTML = pending.map(d => `
-      <tr>
-        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${localTeamsMap[d.teamId]?.name || d.teamId}</td>
-        <td class="actions-cell"><button class="btn btn-green btn-sm" onclick="approveLicense('${d.id}')">Zulassen</button></td>
-      </tr>
-    `).join('');
-
-    document.getElementById("table-all-drivers").innerHTML = allDriversCached.map(d => `
-      <tr>
-        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
-        <td class="actions-cell">
-          <button class="btn btn-yellow btn-sm" onclick="editDriver('${d.id}')">Editieren</button>
-          <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('fahrer', '${d.id}')">Löschen</button>
-        </td>
-      </tr>
-    `).join('');
-
-    document.getElementById("table-admin-teams").innerHTML = Object.keys(localTeamsMap).map(key => {
-      let t = localTeamsMap[key];
-      const teamDrivers = allDriversCached.filter(d => d.teamId === key && d.licenseStatus === "Bestätigt");
-      const d1Name = teamDrivers[0] ? `${teamDrivers[0].realName} (#${teamDrivers[0].driverNumber})` : 'Unbesetzt';
-      const d2Name = teamDrivers[1] ? `${teamDrivers[1].realName} (#${teamDrivers[1].driverNumber})` : 'Unbesetzt';
-      
-      return `<tr>
-        <td>${t.name || key}</td><td>Division ${t.division || '1'}</td><td>${d1Name}</td><td>${d2Name}</td>
-        <td class="actions-cell">
-          <button class="btn btn-yellow btn-sm" onclick="editTeam('${t.id}')">Editieren</button>
-          <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('teams', '${t.id}')">Löschen</button>
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
+  // RENDERS RACES CALENDAR AND CHECKS SIGNUPS DYNAMICALLY
   function renderRaces() {
     const list = document.getElementById("public-races-list");
-    
-    // Filtere Rennen nach dem aktiven Reiter
     const filteredRaces = allRacesCached.filter(r => (r.division || "1") === currentRacesDivision);
+
+    // Auslesen des aktuell lokal registrierten Fahrers für visuelle "Du"-Markierungen
+    let myCachedDriverId = localStorage.getItem("my_driver_id");
+    let myDriverObj = allDriversCached.find(x => x.id === myCachedDriverId);
+    let myDriverName = myDriverObj ? myDriverObj.realName : null;
 
     if(list) {
       list.innerHTML = filteredRaces.map(r => {
-        let isActionable = (r.status === "Anmeldung offen");
+        let isOpen = (r.status === "Anmeldung offen");
+        
+        // Finde alle angemeldeten Fahrer für dieses spezifische Rennen
+        let signupsForThisRace = allSignupsCached.filter(s => s.raceId === r.id);
+        
+        // Prüfe, ob der aktuell am Gerät befindliche User selbst angemeldet ist
+        let amIAttending = myDriverName ? signupsForThisRace.find(s => s.driverName === myDriverName) : null;
+        
+        // Baue eine Vorschau der angemeldeten Fahrernamen für die Anzeige unter dem Rennnamen
+        let driversString = signupsForThisRace.map(s => s.driverName).join(', ');
+        let signupsPreviewHtml = signupsForThisRace.length > 0 
+          ? `<span class="race-signup-list-preview">Teilnehmer (${signupsForThisRace.length}): ${driversString}</span>`
+          : `<span class="race-signup-list-preview" style="color: var(--text3);">Noch keine Fahrer angemeldet</span>`;
+
         return `
           <div class="race-item">
             <div class="race-left">
               <div class="race-num">${r.num}</div>
-              <div><div class="race-name">${r.name}</div></div>
+              <div>
+                <div class="race-name">${r.name}</div>
+                ${signupsPreviewHtml}
+              </div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span class="race-status status-open" style="background:${isActionable?'rgba(0,200,83,0.15)':'rgba(96,96,112,0.3)'}; color:${isActionable?'var(--green)':'var(--text2)'}; border-color:${isActionable?'var(--green)':'var(--border2)'}">${r.status}</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${amIAttending ? `<span class="race-signup-badge">✓ Du (${amIAttending.status})</span>` : ''}
+              
+              <span class="race-status" style="background:${isOpen?'rgba(0,200,83,0.1)':'rgba(96,96,112,0.15)'}; color:${isOpen?'var(--green)':'var(--text2)'}; border: 1px solid ${isOpen?'rgba(0,200,83,0.3)':'rgba(96,96,112,0.3)'}">${r.status}</span>
             </div>
           </div>
         `;
@@ -789,7 +764,6 @@
       </div>`;
   }
 
-  // GLOBAL ACTIONS
   window.addNewRace = async function() {
     await addDoc(collection(db, "races"), {
       num: document.getElementById("add-race-num").value.trim(),
@@ -806,10 +780,7 @@
     const divInput = document.getElementById("add-team-division");
     const teamName = nameInput.value.trim();
     if(!teamName) return alert("Bitte Teamnamen eingeben!");
-    await addDoc(collection(db, "teams"), { 
-      name: teamName,
-      division: divInput.value 
-    });
+    await addDoc(collection(db, "teams"), { name: teamName, division: divInput.value });
     nameInput.value = '';
   };
 
@@ -823,7 +794,6 @@
     }
   };
 
-  // EDIT ACTIONS
   window.editDriver = function(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
@@ -831,14 +801,8 @@
     let newDivision = prompt("Neue Division eingeben (1 oder 2):", d.division || "1");
     let newDiscord = prompt("Neuen Discordnamen eingeben:", d.discordName);
     let newNum = prompt("Neue Fahrernummer eingeben:", d.driverNumber);
-    
     if(newName !== null && newDivision !== null && newDiscord !== null && newNum !== null) {
-      updateDoc(doc(db, "fahrer", id), { 
-        realName: newName.trim(),
-        division: newDivision.trim(),
-        discordName: newDiscord.trim(),
-        driverNumber: parseInt(newNum)
-      });
+      updateDoc(doc(db, "fahrer", id), { realName: newName.trim(), division: newDivision.trim(), discordName: newDiscord.trim(), driverNumber: parseInt(newNum) });
     }
   };
 
@@ -847,12 +811,7 @@
     if(!t) return;
     let name = prompt("Neuen Teamnamen eingeben:", t.name || id);
     let div = prompt("Neue Division eingeben (1 oder 2):", t.division || "1");
-    if(name && div) {
-      updateDoc(doc(db, "teams", id), { 
-        name: name.trim(),
-        division: div.trim()
-      });
-    }
+    if(name && div) { updateDoc(doc(db, "teams", id), { name: name.trim(), division: div.trim() }); }
   };
 
   window.editRace = function(id) {
@@ -862,14 +821,8 @@
     let newName = prompt("Neuen Rennnamen eingeben:", r.name);
     let newDiv = prompt("Neue Division für das Rennen (1 oder 2):", r.division || "1");
     let newStatus = prompt("Neuer Status (Geplant / Anmeldung offen):", r.status);
-    
     if(newNum && newName && newDiv && newStatus) {
-      updateDoc(doc(db, "races", id), { 
-        num: newNum.trim(), 
-        name: newName.trim(), 
-        division: newDiv.trim(),
-        status: newStatus.trim() 
-      });
+      updateDoc(doc(db, "races", id), { num: newNum.trim(), name: newName.trim(), division: newDiv.trim(), status: newStatus.trim() });
     }
   };
 
@@ -878,7 +831,39 @@
     if(status) updateDoc(doc(db, "anmeldungen", id), { status: status.trim() });
   };
 
-  // Aktiviert das Echtzeit-System beim Laden
+  function renderAdminDriversLists(pending) {
+    document.getElementById("table-requests").innerHTML = pending.map(d => `
+      <tr>
+        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${localTeamsMap[d.teamId]?.name || d.teamId}</td>
+        <td class="actions-cell"><button class="btn btn-green btn-sm" onclick="approveLicense('${d.id}')">Zulassen</button></td>
+      </tr>
+    `).join('');
+
+    document.getElementById("table-all-drivers").innerHTML = allDriversCached.map(d => `
+      <tr>
+        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
+        <td class="actions-cell">
+          <button class="btn btn-yellow btn-sm" onclick="editDriver('${d.id}')">Editieren</button>
+          <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('fahrer', '${d.id}')">Löschen</button>
+        </td>
+      </tr>
+    `).join('');
+
+    document.getElementById("table-admin-teams").innerHTML = Object.keys(localTeamsMap).map(key => {
+      let t = localTeamsMap[key];
+      const teamDrivers = allDriversCached.filter(d => d.teamId === key && d.licenseStatus === "Bestätigt");
+      const d1Name = teamDrivers[0] ? `${teamDrivers[0].realName} (#${teamDrivers[0].driverNumber})` : 'Unbesetzt';
+      const d2Name = teamDrivers[1] ? `${teamDrivers[1].realName} (#${teamDrivers[1].driverNumber})` : 'Unbesetzt';
+      return `<tr>
+        <td>${t.name || key}</td><td>Division ${t.division || '1'}</td><td>${d1Name}</td><td>${d2Name}</td>
+        <td class="actions-cell">
+          <button class="btn btn-yellow btn-sm" onclick="editTeam('${t.id}')">Editieren</button>
+          <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('teams', '${t.id}')">Löschen</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
   initLiveSystem();
 </script>
 </body>
