@@ -92,6 +92,12 @@
   .btn-yellow { background: var(--yellow); color: #000; }
   .btn-yellow:hover { background: #ffea00; }
  
+  /* ─── DIVISION SWITCHER TABS ─── */
+  .division-switcher { display: flex; gap: 10px; margin-bottom: 20px; }
+  .div-tab { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+  .div-tab:hover { color: var(--text); background: var(--bg4); }
+  .div-tab.active { background: var(--red); color: #fff; border-color: var(--red); box-shadow: 0 0 12px var(--red-glow); }
+
   /* ─── LAYOUT ─── */
   .page { display: none; padding-top: 52px; min-height: 100vh; }
   .page.active { display: block; }
@@ -138,8 +144,6 @@
   .race-num { font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 900; color: var(--border2); width: 28px; }
   .race-name { font-size: 13.5px; font-weight: 600; }
   .race-status { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; }
-  .status-planned { background: rgba(96,96,112,0.3); color: var(--text2); border: 1px solid var(--border2); }
-  .status-open { background: rgba(0,200,83,0.15); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
  
   /* FORMS */
   .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; max-width: 640px; margin: 0 auto; }
@@ -192,6 +196,7 @@
     .form-group.span2 { grid-column: span 1; }
     .hero-title { font-size: 26px; }
     .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .nav-right { display: flex; gap: 4px; }
   }
 </style>
 </head>
@@ -210,7 +215,8 @@
       <a onclick="showPage('admin',this)">Admin</a>
     </div>
   </div>
-  <div class="nav-right">
+  <div class="nav-right" style="display: flex; gap: 6px;">
+    <button class="btn btn-red btn-sm" onclick="showPage('race-signup-page',null)">Renn-Anmeldung</button>
     <button class="btn btn-outline btn-sm" onclick="showPage('registration',null)">Registrieren</button>
   </div>
 </nav>
@@ -222,6 +228,7 @@
   <a onclick="handleMobileNav('races')">Rennen</a>
   <a onclick="handleMobileNav('profile')">Mein Profil</a>
   <a onclick="handleMobileNav('admin')">Admin</a>
+  <a onclick="handleMobileNav('race-signup-page')">Renn-Anmeldung</a>
 </div>
  
 <div id="page-dashboard" class="page active">
@@ -230,7 +237,12 @@
       <div class="hero-tag">Season 2026</div>
       <h1 class="hero-title">Liga Registration<br><span>Portal</span></h1>
       <p class="hero-sub">Registriere dich als Fahrer, wähle dein Team und starte in die F1 Saison 2026.</p>
-      <button class="btn btn-red" onclick="showPage('registration',null)">Jetzt Registrieren</button>
+      
+      <div class="division-switcher">
+        <button id="dash-div1-tab" class="div-tab active" onclick="switchDashboardDivision('1')">Division 1</button>
+        <button id="dash-div2-tab" class="div-tab" onclick="switchDashboardDivision('2')">Division 2</button>
+      </div>
+
       <div class="stats-bar">
         <div class="stat-item"><span class="stat-value" id="stat-total-teams">0</span><span class="stat-label">Teams</span></div>
         <div class="stat-item"><span class="stat-value" id="stat-free-teams">22</span><span class="stat-label">Frei (Plätze)</span></div>
@@ -243,7 +255,7 @@
   </div>
   <div class="container">
     <div class="section">
-      <div class="section-head"><div class="section-title">Teams Übersicht</div><div class="section-line"></div></div>
+      <div class="section-head"><div class="section-title" id="teams-section-title">Teams Übersicht (Division 1)</div><div class="section-line"></div></div>
       <div class="teams-grid" id="dash-teams"></div>
     </div>
   </div>
@@ -260,25 +272,66 @@
           <div class="form-group"><label>Discord *</label><input type="text" id="reg-discord" required></div>
           <div class="form-group"><label>Nummer *</label><input type="number" id="reg-number" min="1" max="99" required></div>
           <div class="form-group"><label>Rolle *</label><select id="reg-role" required><option value="Stammfahrer">Stammfahrer</option><option value="Ersatzfahrer">Ersatzfahrer</option></select></div>
+          
+          <div class="form-group span2"><label>Division *</label><select id="reg-division" onchange="filterTeamsBySelectedDivision()" required><option value="1">Division 1</option><option value="2">Division 2</option></select></div>
+          
           <div class="form-group span2"><label>Team *</label><select id="reg-team" required></select></div>
         </div>
-        <button type="submit" class="btn btn-red form-submit">Absenden</button>
+        <button type="submit" class="btn btn-red form-submit" style="margin-top:15px;">Absenden</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="page-race-signup-page" class="page">
+  <div class="container" style="padding-top:20px; padding-bottom:32px;">
+    <div class="form-card">
+      <div class="form-title">🏁 Für ein Rennen anmelden</div>
+      <div id="race-signup-success" style="background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); border-radius: 5px; padding: 10px 14px; color: var(--green); display: none; margin-bottom: 15px;">✓ Erfolgreich für das Rennen angemeldet!</div>
+      <form id="race-signup-form">
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Wähle deinen Fahrernamen *</label>
+            <select id="signup-driver-select" required><option value="">-- Fahrer laden... --</option></select>
+          </div>
+          <div class="form-group span2">
+            <label>Wähle das Event *</label>
+            <select id="signup-race-select" required><option value="">-- Keine offenen Anmeldungen vorhanden --</option></select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-red form-submit" style="margin-top:15px;">Verbindlich Anmelden</button>
       </form>
     </div>
   </div>
 </div>
 
 <div id="page-drivers" class="page">
-  <div class="container" style="padding-top:20px;"><div class="drivers-grid" id="drivers-display-grid"></div></div>
+  <div class="container" style="padding-top:20px;">
+    <div class="division-switcher">
+      <button id="drivers-div1-tab" class="div-tab active" onclick="switchDriversDivision('1')">Division 1</button>
+      <button id="drivers-div2-tab" class="div-tab" onclick="switchDriversDivision('2')">Division 2</button>
+    </div>
+    <div class="drivers-grid" id="drivers-display-grid"></div>
+  </div>
 </div>
 
 <div id="page-teams" class="page">
-  <div class="container" style="padding-top:20px;"><div class="teams-grid" id="teams-display-grid"></div></div>
+  <div class="container" style="padding-top:20px;">
+    <div class="division-switcher">
+      <button id="teams-div1-tab" class="div-tab active" onclick="switchTeamsPageDivision('1')">Division 1</button>
+      <button id="teams-div2-tab" class="div-tab" onclick="switchTeamsPageDivision('2')">Division 2</button>
+    </div>
+    <div class="teams-grid" id="teams-display-grid"></div>
+  </div>
 </div>
 
 <div id="page-races" class="page">
   <div class="container" style="padding-top:20px;">
-    <div class="section-head"><div class="section-title">Rennkalender & Anmeldung</div><div class="section-line"></div></div>
+    <div class="division-switcher">
+      <button id="races-div1-tab" class="div-tab active" onclick="switchRacesDivision('1')">Division 1</button>
+      <button id="races-div2-tab" class="div-tab" onclick="switchRacesDivision('2')">Division 2</button>
+    </div>
+    <div class="section-head"><div class="section-title" id="races-section-title">Rennkalender (Division 1)</div><div class="section-line"></div></div>
     <div class="race-list" id="public-races-list"></div>
   </div>
 </div>
@@ -310,20 +363,21 @@
       </div>
 
       <div id="admin-tab-requests" class="admin-subpage active">
-        <div class="table-wrap"><table><thead><tr><th>Fahrer</th><th>Discord</th><th>Nummer</th><th>Team</th><th>Aktion</th></tr></thead><tbody id="table-requests"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Fahrer</th><th>Division</th><th>Discord</th><th>Nummer</th><th>Team</th><th>Aktion</th></tr></thead><tbody id="table-requests"></tbody></table></div>
       </div>
       
       <div id="admin-tab-all-drivers" class="admin-subpage">
-        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-all-drivers"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Division</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-all-drivers"></tbody></table></div>
       </div>
       
       <div id="admin-tab-admin-teams" class="admin-subpage">
         <div style="background: var(--bg2); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 16px; max-width: 400px;">
           <h4 style="margin-bottom: 10px; font-family:'Orbitron';">Neues Team hinzufügen</h4>
           <input type="text" id="add-team-name" placeholder="Team Name (z.B. Ferrari)" style="margin-bottom: 8px;">
+          <select id="add-team-division" style="margin-bottom: 8px;"><option value="1">Division 1</option><option value="2">Division 2</option></select>
           <button class="btn btn-red" style="width:100%;" onclick="addNewTeam()">Team erstellen</button>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Team Name</th><th>Fahrer 1</th><th>Fahrern 2</th><th>Aktionen</th></tr></thead><tbody id="table-admin-teams"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Team Name</th><th>Division</th><th>Fahrer 1</th><th>Fahrer 2</th><th>Aktionen</th></tr></thead><tbody id="table-admin-teams"></tbody></table></div>
       </div>
       
       <div id="admin-tab-admin-races" class="admin-subpage">
@@ -331,10 +385,11 @@
           <h4 style="margin-bottom: 10px; font-family:'Orbitron';">Neues Rennen hinzufügen</h4>
           <input type="text" id="add-race-num" placeholder="z.B. R01" style="margin-bottom: 8px;">
           <input type="text" id="add-race-name" placeholder="Grand Prix Name" style="margin-bottom: 8px;">
+          <select id="add-race-division" style="margin-bottom: 8px;"><option value="1">Division 1</option><option value="2">Division 2</option></select>
           <select id="add-race-status" style="margin-bottom: 8px;"><option value="Geplant">Geplant</option><option value="Anmeldung offen">Anmeldung offen</option></select>
           <button class="btn btn-red" style="width:100%;" onclick="addNewRace()">Speichern</button>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>Nr.</th><th>Rennen</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-admin-races"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Nr.</th><th>Rennen</th><th>Division</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-admin-races"></tbody></table></div>
       </div>
       
       <div id="admin-tab-admin-signups" class="admin-subpage">
@@ -360,6 +415,12 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const ALLOWED_ADMIN_EMAILS = ["leagueaustrianracing@gmail.com"];
+
+  // Aktive Filterzustände für die Reiter (standardmäßig Division 1)
+  let currentDashboardDivision = '1';
+  let currentDriversDivision = '1';
+  let currentTeamsDivision = '1';
+  let currentRacesDivision = '1';
 
   let localTeamsMap = {};
   let allDriversCached = [];
@@ -391,6 +452,56 @@
     btn.classList.add('active');
   };
 
+  // DIVISION REITER SWITCHER FUNKTIONEN
+  window.switchDashboardDivision = function(divNum) {
+    currentDashboardDivision = divNum;
+    document.querySelectorAll('#page-dashboard .div-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`dash-div${divNum}-tab`).classList.add('active');
+    document.getElementById('teams-section-title').textContent = `Teams Übersicht (Division ${divNum})`;
+    renderTeamsLayouts();
+  };
+
+  window.switchDriversDivision = function(divNum) {
+    currentDriversDivision = divNum;
+    document.querySelectorAll('#page-drivers .div-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`drivers-div${divNum}-tab`).classList.add('active');
+    renderPublicDriversGrid();
+  };
+
+  window.switchTeamsPageDivision = function(divNum) {
+    currentTeamsDivision = divNum;
+    document.querySelectorAll('#page-teams .div-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`teams-div${divNum}-tab`).classList.add('active');
+    renderTeamsLayouts();
+  };
+
+  window.switchRacesDivision = function(divNum) {
+    currentRacesDivision = divNum;
+    document.querySelectorAll('#page-races .div-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById(`races-div${divNum}-tab`).classList.add('active');
+    document.getElementById('races-section-title').textContent = `Rennkalender (Division ${divNum})`;
+    renderRaces();
+  };
+
+  // Formular-Teams basierend auf der ausgewählten Division filtern
+  window.filterTeamsBySelectedDivision = function() {
+    const selectedDiv = document.getElementById("reg-division").value;
+    const dropdown = document.getElementById("reg-team");
+    dropdown.innerHTML = '';
+    
+    Object.keys(localTeamsMap).forEach(id => {
+      const team = localTeamsMap[id];
+      // Wenn das Feld 'division' im Team fehlt, wird es standardmäßig als Div 1 behandelt
+      const teamDiv = team.division || "1";
+      if(teamDiv === selectedDiv) {
+        let opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = team.name || id;
+        dropdown.appendChild(opt);
+      }
+    });
+  };
+
   // REGISTRATION ACTION
   document.getElementById("main-reg-form").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -399,6 +510,7 @@
       discordName: document.getElementById("reg-discord").value.trim(),
       driverNumber: parseInt(document.getElementById("reg-number").value),
       role: document.getElementById("reg-role").value,
+      division: document.getElementById("reg-division").value,
       teamId: document.getElementById("reg-team").value,
       licenseStatus: "Offen",
       penaltyPoints: 0
@@ -407,18 +519,42 @@
     localStorage.setItem("my_driver_id", docRef.id);
     document.getElementById("reg-success").style.display = "block";
     document.getElementById("main-reg-form").reset();
+    filterTeamsBySelectedDivision();
+  });
+
+  // SUBMIT RACE SIGNUP FROM DROPDOWNS
+  document.getElementById("race-signup-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const driverSelect = document.getElementById("signup-driver-select");
+    const raceSelect = document.getElementById("signup-race-select");
+
+    if(!driverSelect.value || !raceSelect.value) {
+      return alert("Bitte wähle deinen Namen und das gewünschte Rennen aus!");
+    }
+
+    const selectedRaceText = raceSelect.options[raceSelect.selectedIndex].text;
+
+    await addDoc(collection(db, "anmeldungen"), {
+      raceId: raceSelect.value,
+      raceName: selectedRaceText,
+      driverName: driverSelect.value,
+      status: "Angemeldet"
+    });
+
+    document.getElementById("race-signup-success").style.display = "block";
+    setTimeout(() => { document.getElementById("race-signup-success").style.display = "none"; }, 5000);
+    raceSelect.value = "";
+    driverSelect.value = "";
   });
 
   // INITIALIZE SNAPSHOTS
   function initLiveSystem() {
     onSnapshot(collection(db, "teams"), (snap) => {
       localTeamsMap = {};
-      const dropdown = document.getElementById("reg-team");
-      dropdown.innerHTML = '';
       snap.forEach(d => {
         localTeamsMap[d.id] = { id: d.id, ...d.data() };
-        let opt = document.createElement("option"); opt.value = d.id; opt.textContent = d.data().name || d.id; dropdown.appendChild(opt);
       });
+      filterTeamsBySelectedDivision();
       syncDrivers();
     });
 
@@ -426,6 +562,7 @@
       allRacesCached = [];
       snap.forEach(d => { allRacesCached.push({ id: d.id, ...d.data() }); });
       renderRaces();
+      updateRaceDropdown();
     });
 
     onSnapshot(collection(db, "anmeldungen"), (snap) => {
@@ -450,54 +587,88 @@
     onSnapshot(collection(db, "fahrer"), (snap) => {
       allDriversCached = [];
       let pending = [];
-      let activeCount = 0;
-      let subCount = 0;
       
       snap.forEach(d => {
         const item = { id: d.id, ...d.data() };
         allDriversCached.push(item);
         if(item.licenseStatus === "Offen") pending.push(item);
-        if(item.licenseStatus === "Bestätigt") {
-          if(item.role === "Stammfahrer") activeCount++;
-          if(item.role === "Ersatzfahrer") subCount++;
-        }
       });
       
-      // Update Counter Metrics & Dynamischer Runterzähler (Start bei 22 Plätzen)
-      document.getElementById("stat-pending-drivers").textContent = pending.length;
-      document.getElementById("stat-active-drivers").textContent = activeCount;
-      document.getElementById("stat-sub-drivers").textContent = subCount;
-      
-      let freeSlotsCalculated = 22 - activeCount;
-      document.getElementById("stat-free-teams").textContent = freeSlotsCalculated < 0 ? 0 : freeSlotsCalculated;
-
       renderTeamsLayouts();
       renderAdminDriversLists(pending);
       renderPublicDriversGrid();
+      updateDriverDropdown();
       
       const cachedId = localStorage.getItem("my_driver_id");
       if(cachedId) updateProfilePage(cachedId);
     });
   }
 
-  // LIGA FAHRER SEITE BEFÜLLEN
-  function renderPublicDriversGrid() {
-    const grid = document.getElementById("drivers-display-grid");
-    if(grid) {
-      grid.innerHTML = allDriversCached.filter(d => d.licenseStatus === "Bestätigt").map(d => `
-        <div class="driver-card">
-          <div class="driver-num">${d.driverNumber}</div>
-          <div class="driver-name">${d.realName}</div>
-          <div class="driver-team">${localTeamsMap[d.teamId]?.name || 'Ersatz / Unbekannt'} (${d.role})</div>
-        </div>
-      `).join('');
+  // UPDATES THE DRIVER DROPDOWN IN THE SIGNUP FORM
+  function updateDriverDropdown() {
+    const driverSelect = document.getElementById("signup-driver-select");
+    if(!driverSelect) return;
+    
+    const approvedDrivers = allDriversCached.filter(d => d.licenseStatus === "Bestätigt");
+    
+    if(approvedDrivers.length === 0) {
+      driverSelect.innerHTML = '<option value="">-- Keine bestätigten Fahrer gefunden --</option>';
+      return;
     }
+
+    driverSelect.innerHTML = '<option value="">-- Wähle deinen Namen aus --</option>' + 
+      approvedDrivers.map(d => `<option value="${d.realName}">${d.realName} (Div ${d.division || '1'} - #${d.driverNumber})</option>`).join('');
   }
 
-  // TEAMS LOGIK (DASHBOARD & TEAMS REITER)
+  // UPDATES THE RACES DROPDOWN IN THE SIGNUP FORM
+  function updateRaceDropdown() {
+    const raceSelect = document.getElementById("signup-race-select");
+    if(!raceSelect) return;
+
+    const openRaces = allRacesCached.filter(r => r.status === "Anmeldung offen");
+
+    if(openRaces.length === 0) {
+      raceSelect.innerHTML = '<option value="">-- Keine offenen Anmeldungen vorhanden --</option>';
+      return;
+    }
+
+    raceSelect.innerHTML = '<option value="">-- Wähle das Rennen aus --</option>' +
+      openRaces.map(r => `<option value="${r.id}">${r.num} - ${r.name} (Div ${r.division || '1'})</option>`).join('');
+  }
+
+  function renderPublicDriversGrid() {
+    const grid = document.getElementById("drivers-display-grid");
+    if(!grid) return;
+
+    // Filter nach aktiver Reiterauswahl
+    const filteredDrivers = allDriversCached.filter(d => d.licenseStatus === "Bestätigt" && (d.division || "1") === currentDriversDivision);
+
+    grid.innerHTML = filteredDrivers.map(d => `
+      <div class="driver-card">
+        <div class="driver-num">${d.driverNumber}</div>
+        <div class="driver-name">${d.realName}</div>
+        <div class="driver-team">${localTeamsMap[d.teamId]?.name || 'Ersatz / Unbekannt'} (${d.role})</div>
+      </div>
+    `).join('');
+  }
+
   function renderTeamsLayouts() {
+    // Bestimme, welche Division geladen werden soll, je nachdem, welche Seite gerade aktiv ist
+    const activePageDiv = document.getElementById("page-dashboard").classList.contains("active") ? currentDashboardDivision : currentTeamsDivision;
+
+    // Zähler für die Statistiken (nur für die aktive Division)
+    let activeCount = 0;
+    let subCount = 0;
     let fullTeamsCount = 0;
-    const teamIDs = Object.keys(localTeamsMap);
+
+    allDriversCached.forEach(d => {
+      if (d.licenseStatus === "Bestätigt" && (d.division || "1") === activePageDiv) {
+        if (d.role === "Stammfahrer") activeCount++;
+        if (d.role === "Ersatzfahrer") subCount++;
+      }
+    });
+
+    const teamIDs = Object.keys(localTeamsMap).filter(id => (localTeamsMap[id].division || "1") === activePageDiv);
     document.getElementById("stat-total-teams").textContent = teamIDs.length;
 
     let html = teamIDs.map(id => {
@@ -521,23 +692,31 @@
       </div>`;
     }).join('');
 
+    // Metriken auf die UI übertragen
+    document.getElementById("stat-active-drivers").textContent = activeCount;
+    document.getElementById("stat-sub-drivers").textContent = subCount;
     document.getElementById("stat-full-teams").textContent = fullTeamsCount;
+    
+    // In einer 11-Team Struktur gibt es maximal 22 Cockpits
+    let maxSeats = teamIDs.length * 2;
+    let freeSlotsCalculated = maxSeats - activeCount;
+    document.getElementById("stat-free-teams").textContent = freeSlotsCalculated < 0 ? 0 : freeSlotsCalculated;
+
     document.getElementById("dash-teams").innerHTML = html;
     if(document.getElementById("teams-display-grid")) document.getElementById("teams-display-grid").innerHTML = html;
   }
 
-  // RENDER DYNAMIC TABLES (WITH EDIT & DELETE ACTIONS)
   function renderAdminDriversLists(pending) {
     document.getElementById("table-requests").innerHTML = pending.map(d => `
       <tr>
-        <td>${d.realName}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${localTeamsMap[d.teamId]?.name || d.teamId}</td>
+        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${localTeamsMap[d.teamId]?.name || d.teamId}</td>
         <td class="actions-cell"><button class="btn btn-green btn-sm" onclick="approveLicense('${d.id}')">Zulassen</button></td>
       </tr>
     `).join('');
 
     document.getElementById("table-all-drivers").innerHTML = allDriversCached.map(d => `
       <tr>
-        <td>${d.realName}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
+        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
         <td class="actions-cell">
           <button class="btn btn-yellow btn-sm" onclick="editDriver('${d.id}')">Editieren</button>
           <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('fahrer', '${d.id}')">Löschen</button>
@@ -552,7 +731,7 @@
       const d2Name = teamDrivers[1] ? `${teamDrivers[1].realName} (#${teamDrivers[1].driverNumber})` : 'Unbesetzt';
       
       return `<tr>
-        <td>${t.name || key}</td><td>${d1Name}</td><td>${d2Name}</td>
+        <td>${t.name || key}</td><td>Division ${t.division || '1'}</td><td>${d1Name}</td><td>${d2Name}</td>
         <td class="actions-cell">
           <button class="btn btn-yellow btn-sm" onclick="editTeam('${t.id}')">Editieren</button>
           <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('teams', '${t.id}')">Löschen</button>
@@ -561,14 +740,15 @@
     }).join('');
   }
 
-  // CALENDAR WITH LIVE SIGNUP BUTTONS
   function renderRaces() {
     const list = document.getElementById("public-races-list");
+    
+    // Filtere Rennen nach dem aktiven Reiter
+    const filteredRaces = allRacesCached.filter(r => (r.division || "1") === currentRacesDivision);
+
     if(list) {
-      list.innerHTML = allRacesCached.map(r => {
+      list.innerHTML = filteredRaces.map(r => {
         let isActionable = (r.status === "Anmeldung offen");
-        let btnHtml = isActionable ? `<button class="btn btn-red btn-sm" onclick="signUpForRace('${r.id}', '${r.name}')">Anmelden</button>` : '';
-        
         return `
           <div class="race-item">
             <div class="race-left">
@@ -577,7 +757,6 @@
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
               <span class="race-status status-open" style="background:${isActionable?'rgba(0,200,83,0.15)':'rgba(96,96,112,0.3)'}; color:${isActionable?'var(--green)':'var(--text2)'}; border-color:${isActionable?'var(--green)':'var(--border2)'}">${r.status}</span>
-              ${btnHtml}
             </div>
           </div>
         `;
@@ -586,7 +765,7 @@
 
     document.getElementById("table-admin-races").innerHTML = allRacesCached.map(r => `
       <tr>
-        <td>${r.num}</td><td>${r.name}</td><td>${r.status}</td>
+        <td>${r.num}</td><td>${r.name}</td><td>Division ${r.division || '1'}</td><td>${r.status}</td>
         <td class="actions-cell">
           <button class="btn btn-yellow btn-sm" onclick="editRace('${r.id}')">Editieren</button>
           <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('races', '${r.id}')">Löschen</button>
@@ -595,28 +774,6 @@
     `).join('');
   }
 
-  // DRIVER SIGN UP SUBMISSION
-  window.signUpForRace = async function(raceId, raceName) {
-    let defaultDriverName = "";
-    const cachedId = localStorage.getItem("my_driver_id");
-    if(cachedId) {
-      const activeDriver = allDriversCached.find(x => x.id === cachedId);
-      if(activeDriver) defaultDriverName = activeDriver.realName;
-    }
-
-    let driverName = prompt("Gib deinen Fahrernamen ein, um dich für das Rennen anzumelden:", defaultDriverName);
-    if(!driverName || driverName.trim() === "") return alert("Anmeldung abgebrochen oder Name ungültig.");
-
-    await addDoc(collection(db, "anmeldungen"), {
-      raceId: raceId,
-      raceName: raceName,
-      driverName: driverName.trim(),
-      status: "Angemeldet"
-    });
-
-    alert(`Erfolgreich für das Rennen ${raceName} angemeldet!`);
-  };
-
   function updateProfilePage(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
@@ -624,6 +781,7 @@
       <div class="profile-box">
         <div class="profile-data-grid">
           <div class="profile-data-item"><span class="profile-label">Fahrer</span><span class="profile-value">${d.realName}</span></div>
+          <div class="profile-data-item"><span class="profile-label">Division</span><span class="profile-value">Division ${d.division || '1'}</span></div>
           <div class="profile-data-item"><span class="profile-label">Nummer</span><span class="profile-value">#${d.driverNumber}</span></div>
           <div class="profile-data-item"><span class="profile-label">Status</span><span class="profile-value">${d.licenseStatus}</span></div>
           <div class="profile-data-item"><span class="profile-label">Gewähltes Team</span><span class="profile-value">${localTeamsMap[d.teamId]?.name || 'Keins'}</span></div>
@@ -636,6 +794,7 @@
     await addDoc(collection(db, "races"), {
       num: document.getElementById("add-race-num").value.trim(),
       name: document.getElementById("add-race-name").value.trim(),
+      division: document.getElementById("add-race-division").value,
       status: document.getElementById("add-race-status").value
     });
     document.getElementById("add-race-num").value = '';
@@ -644,9 +803,13 @@
 
   window.addNewTeam = async function() {
     const nameInput = document.getElementById("add-team-name");
+    const divInput = document.getElementById("add-team-division");
     const teamName = nameInput.value.trim();
     if(!teamName) return alert("Bitte Teamnamen eingeben!");
-    await addDoc(collection(db, "teams"), { name: teamName });
+    await addDoc(collection(db, "teams"), { 
+      name: teamName,
+      division: divInput.value 
+    });
     nameInput.value = '';
   };
 
@@ -665,12 +828,14 @@
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
     let newName = prompt("Neuen Fahrernamen eingeben:", d.realName);
+    let newDivision = prompt("Neue Division eingeben (1 oder 2):", d.division || "1");
     let newDiscord = prompt("Neuen Discordnamen eingeben:", d.discordName);
     let newNum = prompt("Neue Fahrernummer eingeben:", d.driverNumber);
     
-    if(newName !== null && newDiscord !== null && newNum !== null) {
+    if(newName !== null && newDivision !== null && newDiscord !== null && newNum !== null) {
       updateDoc(doc(db, "fahrer", id), { 
         realName: newName.trim(),
+        division: newDivision.trim(),
         discordName: newDiscord.trim(),
         driverNumber: parseInt(newNum)
       });
@@ -681,7 +846,13 @@
     const t = localTeamsMap[id];
     if(!t) return;
     let name = prompt("Neuen Teamnamen eingeben:", t.name || id);
-    if(name) updateDoc(doc(db, "teams", id), { name: name.trim() });
+    let div = prompt("Neue Division eingeben (1 oder 2):", t.division || "1");
+    if(name && div) {
+      updateDoc(doc(db, "teams", id), { 
+        name: name.trim(),
+        division: div.trim()
+      });
+    }
   };
 
   window.editRace = function(id) {
@@ -689,10 +860,16 @@
     if(!r) return;
     let newNum = prompt("Neue Renn-ID/Nummer (z.B. R01):", r.num);
     let newName = prompt("Neuen Rennnamen eingeben:", r.name);
+    let newDiv = prompt("Neue Division für das Rennen (1 oder 2):", r.division || "1");
     let newStatus = prompt("Neuer Status (Geplant / Anmeldung offen):", r.status);
     
-    if(newNum && newName && newStatus) {
-      updateDoc(doc(db, "races", id), { num: newNum.trim(), name: newName.trim(), status: newStatus.trim() });
+    if(newNum && newName && newDiv && newStatus) {
+      updateDoc(doc(db, "races", id), { 
+        num: newNum.trim(), 
+        name: newName.trim(), 
+        division: newDiv.trim(),
+        status: newStatus.trim() 
+      });
     }
   };
 
@@ -701,6 +878,7 @@
     if(status) updateDoc(doc(db, "anmeldungen", id), { status: status.trim() });
   };
 
+  // Aktiviert das Echtzeit-System beim Laden
   initLiveSystem();
 </script>
 </body>
