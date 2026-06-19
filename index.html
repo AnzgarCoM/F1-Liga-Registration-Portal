@@ -157,7 +157,7 @@
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group.span2 { grid-column: span 2; }
   label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; }
-  input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; width: 100%; min-height: 40px; width: 100%; }
+  input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; width: 100%; min-height: 40px; }
   
   /* ADMIN PANEL */
   .admin-tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: 6px; margin-bottom: 16px; border: 1px solid var(--border); overflow-x: auto; }
@@ -275,7 +275,7 @@
           <div class="form-group"><label>Name *</label><input type="text" id="reg-name" required></div>
           <div class="form-group"><label>Discord *</label><input type="text" id="reg-discord" required></div>
           <div class="form-group"><label>Nummer *</label><input type="number" id="reg-number" min="1" max="99" required></div>
-          <div class="form-group"><label>Rolle *</label><select id="reg-role" required><option value="Stammfahrer">Stammfahrer</option><option value="Ersatzfahrer">Ersatzfahrer</option></select></div>
+          <div class="form-group"><label>Rolle *</label><select id="reg-role" onchange="filterTeamsBySelectedDivision()" required><option value="Stammfahrer">Stammfahrer</option><option value="Ersatzfahrer">Ersatzfahrer</option></select></div>
           <div class="form-group span2"><label>Division *</label><select id="reg-division" onchange="filterTeamsBySelectedDivision()" required><option value="1">Division 1</option><option value="2">Division 2</option></select></div>
           <div class="form-group span2"><label>Team *</label><select id="reg-team" required></select></div>
         </div>
@@ -486,33 +486,58 @@
     renderRaces();
   };
 
+  // VERBESSERTES FILTERN BEI DER REGISTRIERUNG: Blendet volle Teams für Stammfahrer aus
   window.filterTeamsBySelectedDivision = function() {
     const selectedDiv = document.getElementById("reg-division").value;
+    const selectedRole = document.getElementById("reg-role").value;
     const dropdown = document.getElementById("reg-team");
     dropdown.innerHTML = '';
     
     Object.keys(localTeamsMap).forEach(id => {
       const team = localTeamsMap[id];
       const teamDiv = team.division || "1";
+      
       if(teamDiv === selectedDiv) {
+        // Zähle wie viele bestätigte Stammfahrer bereits in diesem Team sind
+        const permanentDriversInTeam = allDriversCached.filter(d => d.teamId === id && d.licenseStatus === "Bestätigt" && d.role === "Stammfahrer");
+        
         let opt = document.createElement("option");
         opt.value = id;
-        opt.textContent = team.name || id;
+        
+        if (permanentDriversInTeam.length >= 2 && selectedRole === "Stammfahrer") {
+          // Wenn das Team voll ist und der User Stammfahrer werden will -> Deaktivieren
+          opt.textContent = `${team.name || id} (VOLL - Besetzt)`;
+          opt.disabled = true;
+        } else {
+          opt.textContent = `${team.name || id} (${permanentDriversInTeam.length}/2 Plätze belegt)`;
+        }
         dropdown.appendChild(opt);
       }
     });
+    
+    // Falls kein Team wählbar ist oder das erste Team gesperrt ist, eine leere Option als Fallback
+    if(dropdown.length > 0 && dropdown.options[dropdown.selectedIndex]?.disabled) {
+      dropdown.value = "";
+    }
   };
 
   // REGISTRATION ACTION
   document.getElementById("main-reg-form").addEventListener("submit", async function(e) {
     e.preventDefault();
+    const chosenTeamId = document.getElementById("reg-team").value;
+    const chosenRole = document.getElementById("reg-role").value;
+    
+    if(!chosenTeamId && chosenRole === "Stammfahrer") {
+      return alert("Bitte wähle ein verfügbares Team aus!");
+    }
+
     const data = {
       realName: document.getElementById("reg-name").value.trim(),
       discordName: document.getElementById("reg-discord").value.trim(),
       driverNumber: parseInt(document.getElementById("reg-number").value),
-      role: document.getElementById("reg-role").value,
+      role: chosenRole,
       division: document.getElementById("reg-division").value,
-      teamId: document.getElementById("reg-team").value,
+      teamId: chosenTeamId,
       licenseStatus: "Offen",
       penaltyPoints: 0
     };
@@ -601,6 +626,7 @@
       renderAdminDriversLists(pending);
       renderPublicDriversGrid();
       updateDriverDropdown();
+      filterTeamsBySelectedDivision();
       
       const cachedId = localStorage.getItem("my_driver_id");
       if(cachedId) updateProfilePage(cachedId);
@@ -774,8 +800,20 @@
     nameInput.value = '';
   };
 
-  window.approveLicense = async function(id) {
-    await updateDoc(doc(db, "fahrer", id), { licenseStatus: "Bestätigt" });
+  window.approveLicense = function(id) {
+    const d = allDriversCached.find(x => x.id === id);
+    if(!d) return;
+
+    // SICHERHEITSPRÜFUNG BEIM FREISCHALTEN
+    if(d.role === "Stammfahrer" && d.teamId) {
+      const permanentDriversInTeam = allDriversCached.filter(x => x.teamId === d.teamId && x.licenseStatus === "Bestätigt" && x.role === "Stammfahrer");
+      if(permanentDriversInTeam.length >= 2) {
+        alert(`Fehler: Das Team "${localTeamsMap[d.teamId]?.name || 'Ausgewähltes Team'}" hat bereits 2 bestätigte Stammfahrer! Der Fahrer wurde freigeschaltet, aber das Team wurde auf "Keins" gesetzt.`);
+        updateDoc(doc(db, "fahrer", id), { licenseStatus: "Bestätigt", teamId: "" });
+        return;
+      }
+    }
+    updateDoc(doc(db, "fahrer", id), { licenseStatus: "Bestätigt" });
   };
 
   window.deleteGlobalDoc = async function(col, id) {
@@ -784,7 +822,7 @@
     }
   };
 
-  // AKTUALISIERTE FUNKTION: Fragt nun auch nach dem Team
+  // SICHERHEITSPRÜFUNG BEI ADMIN-ZUWEISUNG INTEGRATION
   window.editDriver = function(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
@@ -797,35 +835,39 @@
     if(newName !== null && newDivision !== null && newDiscord !== null && newNum !== null) {
       const targetDiv = newDivision.trim();
       
-      // Liste der verfügbaren Teams für diese Division generieren
       let teamOptionsText = "Verfügbare Teams für Division " + targetDiv + ":\n";
       let availableTeamsInDiv = [];
       
       Object.keys(localTeamsMap).forEach(teamKey => {
         let t = localTeamsMap[teamKey];
         if((t.division || "1") === targetDiv) {
-          teamOptionsText += `- ${t.name}\n`;
-          availableTeamsInDiv.push(t);
+          const permanentDriversInTeam = allDriversCached.filter(x => x.teamId === teamKey && x.licenseStatus === "Bestätigt" && x.role === "Stammfahrer" && x.id !== id);
+          teamOptionsText += `- ${t.name} (${permanentDriversInTeam.length}/2 besetzt)\n`;
+          availableTeamsInDiv.push({ ...t, currentCount: permanentDriversInTeam.length });
         }
       });
-      teamOptionsText += "\nGib den exakten Teamnamen ein, um ihn zuzuweisen (oder leer lassen für kein Team):";
+      teamOptionsText += "\nGib den exakten Teamnamen ein (leer lassen für kein Team):";
       
       let currentTeamName = localTeamsMap[d.teamId]?.name || "";
-      // Wenn die Division geändert wurde, schlagen wir standardmäßig kein Team vor
       if(targetDiv !== (d.division || "1")) { currentTeamName = ""; }
       
       let newTeamInput = prompt(teamOptionsText, currentTeamName);
-      let newTeamId = d.teamId; // Standardmäßig das alte Team behalten
+      let newTeamId = d.teamId;
       
       if(newTeamInput !== null) {
         const searchedName = newTeamInput.trim().toLowerCase();
         if(searchedName === "") {
           newTeamId = "";
         } else {
-          // Passendes Team anhand des Namens suchen
           let foundTeam = availableTeamsInDiv.find(t => (t.name || "").toLowerCase() === searchedName);
           if(foundTeam) {
-            newTeamId = foundTeam.id;
+            // Prüfung ob das ausgewählte Team voll ist (nur relevant für Stammfahrer)
+            if(d.role === "Stammfahrer" && foundTeam.currentCount >= 2) {
+              alert("Dieses Team ist bereits voll! Das Team des Fahrers wird auf 'Keins' zurückgesetzt.");
+              newTeamId = "";
+            } else {
+              newTeamId = foundTeam.id;
+            }
           } else {
             alert("Team nicht gefunden! Es wurde kein oder das alte Team eingetragen.");
             if(targetDiv !== (d.division || "1")) { newTeamId = ""; }
