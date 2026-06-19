@@ -157,7 +157,7 @@
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group.span2 { grid-column: span 2; }
   label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; }
-  input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; width: 100%; min-height: 40px; }
+  input, select, textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; width: 100%; min-height: 40px; width: 100%; }
   
   /* ADMIN PANEL */
   .admin-tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: 6px; margin-bottom: 16px; border: 1px solid var(--border); overflow-x: auto; }
@@ -369,7 +369,7 @@
       </div>
       
       <div id="admin-tab-all-drivers" class="admin-subpage">
-        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Division</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-all-drivers"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Division</th><th>Team</th><th>Discord</th><th>Nummer</th><th>Rolle</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="table-all-drivers"></tbody></table></div>
       </div>
       
       <div id="admin-tab-admin-teams" class="admin-subpage">
@@ -784,29 +784,62 @@
     }
   };
 
-  // HIER IST DIE VERBESSERTE FUNKTION INTEGRIERT
+  // AKTUALISIERTE FUNKTION: Fragt nun auch nach dem Team
   window.editDriver = function(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
+    
     let newName = prompt("Neuen Fahrernamen eingeben:", d.realName);
     let newDivision = prompt("Neue Division eingeben (1 oder 2):", d.division || "1");
     let newDiscord = prompt("Neuen Discordnamen eingeben:", d.discordName);
     let newNum = prompt("Neue Fahrernummer eingeben:", d.driverNumber);
     
     if(newName !== null && newDivision !== null && newDiscord !== null && newNum !== null) {
+      const targetDiv = newDivision.trim();
+      
+      // Liste der verfügbaren Teams für diese Division generieren
+      let teamOptionsText = "Verfügbare Teams für Division " + targetDiv + ":\n";
+      let availableTeamsInDiv = [];
+      
+      Object.keys(localTeamsMap).forEach(teamKey => {
+        let t = localTeamsMap[teamKey];
+        if((t.division || "1") === targetDiv) {
+          teamOptionsText += `- ${t.name}\n`;
+          availableTeamsInDiv.push(t);
+        }
+      });
+      teamOptionsText += "\nGib den exakten Teamnamen ein, um ihn zuzuweisen (oder leer lassen für kein Team):";
+      
+      let currentTeamName = localTeamsMap[d.teamId]?.name || "";
+      // Wenn die Division geändert wurde, schlagen wir standardmäßig kein Team vor
+      if(targetDiv !== (d.division || "1")) { currentTeamName = ""; }
+      
+      let newTeamInput = prompt(teamOptionsText, currentTeamName);
+      let newTeamId = d.teamId; // Standardmäßig das alte Team behalten
+      
+      if(newTeamInput !== null) {
+        const searchedName = newTeamInput.trim().toLowerCase();
+        if(searchedName === "") {
+          newTeamId = "";
+        } else {
+          // Passendes Team anhand des Namens suchen
+          let foundTeam = availableTeamsInDiv.find(t => (t.name || "").toLowerCase() === searchedName);
+          if(foundTeam) {
+            newTeamId = foundTeam.id;
+          } else {
+            alert("Team nicht gefunden! Es wurde kein oder das alte Team eingetragen.");
+            if(targetDiv !== (d.division || "1")) { newTeamId = ""; }
+          }
+        }
+      }
+
       let updatedData = { 
         realName: newName.trim(), 
-        division: newDivision.trim(), 
+        division: targetDiv, 
         discordName: newDiscord.trim(), 
-        driverNumber: parseInt(newNum) 
+        driverNumber: parseInt(newNum),
+        teamId: newTeamId
       };
-
-      // Wenn die Division geändert wurde, setze das Team zurück, 
-      // da das alte Team zur falschen Division gehört.
-      if (newDivision.trim() !== (d.division || "1")) {
-        updatedData.teamId = ""; 
-        alert("Hinweis: Da die Division geändert wurde, wurde das Team des Fahrers zurückgesetzt. Bitte weise ihm ein neues Team zu.");
-      }
 
       updateDoc(doc(db, "fahrer", id), updatedData);
     }
@@ -850,7 +883,7 @@
 
     document.getElementById("table-all-drivers").innerHTML = allDriversCached.map(d => `
       <tr>
-        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
+        <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${localTeamsMap[d.teamId]?.name || '<em style="color:var(--text3)">Keins</em>'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${d.role}</td><td>${d.licenseStatus}</td>
         <td class="actions-cell">
           <button class="btn btn-yellow btn-sm" onclick="editDriver('${d.id}')">Editieren</button>
           <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('fahrer', '${d.id}')">Löschen</button>
