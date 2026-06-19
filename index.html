@@ -145,7 +145,7 @@
   .race-name { font-size: 13.5px; font-weight: 600; }
   .race-status { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; border: 1px solid transparent; }
   
-  /* NEU: Styles für die Anmelde-Indikatoren am Rennen */
+  /* Anmelde-Indikatoren am Rennen */
   .race-signup-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; text-transform: uppercase; background: rgba(0, 200, 83, 0.15); color: var(--green); border: 1px solid rgba(0, 200, 83, 0.4); display: inline-flex; align-items: center; gap: 4px; }
   .race-signup-list-preview { font-size: 11px; color: var(--text2); margin-top: 4px; font-style: italic; display: block; }
  
@@ -426,7 +426,7 @@
   let localTeamsMap = {};
   let allDriversCached = [];
   let allRacesCached = [];
-  let allSignupsCached = []; // NEU: Lokaler Cache für alle Rennanmeldungen
+  let allSignupsCached = [];
 
   window.toggleMobileMenu = function() { document.getElementById("mobile-drawer").classList.toggle("open"); };
   window.handleMobileNav = function(pageId) { document.getElementById("mobile-drawer").classList.remove("open"); showPage(pageId, null); };
@@ -438,7 +438,6 @@
       document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
       element.classList.add('active');
     }
-    // Falls die Team- oder Rennübersichten geladen werden, rendern wir neu um den synchronen Status zu wahren
     if(pageId === 'dashboard' || pageId === 'teams') renderTeamsLayouts();
     if(pageId === 'races') renderRaces();
   };
@@ -583,7 +582,7 @@
         </tr>`;
       });
       document.getElementById("table-admin-signups").innerHTML = html;
-      renderRaces(); // Wenn neue Anmeldungen kommen, aktualisieren wir den Rennkalender sofort
+      renderRaces();
     });
   }
 
@@ -693,12 +692,10 @@
     if(document.getElementById("teams-display-grid")) document.getElementById("teams-display-grid").innerHTML = html;
   }
 
-  // RENDERS RACES CALENDAR AND CHECKS SIGNUPS DYNAMICALLY
   function renderRaces() {
     const list = document.getElementById("public-races-list");
     const filteredRaces = allRacesCached.filter(r => (r.division || "1") === currentRacesDivision);
 
-    // Auslesen des aktuell lokal registrierten Fahrers für visuelle "Du"-Markierungen
     let myCachedDriverId = localStorage.getItem("my_driver_id");
     let myDriverObj = allDriversCached.find(x => x.id === myCachedDriverId);
     let myDriverName = myDriverObj ? myDriverObj.realName : null;
@@ -706,14 +703,8 @@
     if(list) {
       list.innerHTML = filteredRaces.map(r => {
         let isOpen = (r.status === "Anmeldung offen");
-        
-        // Finde alle angemeldeten Fahrer für dieses spezifische Rennen
         let signupsForThisRace = allSignupsCached.filter(s => s.raceId === r.id);
-        
-        // Prüfe, ob der aktuell am Gerät befindliche User selbst angemeldet ist
         let amIAttending = myDriverName ? signupsForThisRace.find(s => s.driverName === myDriverName) : null;
-        
-        // Baue eine Vorschau der angemeldeten Fahrernamen für die Anzeige unter dem Rennnamen
         let driversString = signupsForThisRace.map(s => s.driverName).join(', ');
         let signupsPreviewHtml = signupsForThisRace.length > 0 
           ? `<span class="race-signup-list-preview">Teilnehmer (${signupsForThisRace.length}): ${driversString}</span>`
@@ -730,7 +721,6 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               ${amIAttending ? `<span class="race-signup-badge">✓ Du (${amIAttending.status})</span>` : ''}
-              
               <span class="race-status" style="background:${isOpen?'rgba(0,200,83,0.1)':'rgba(96,96,112,0.15)'}; color:${isOpen?'var(--green)':'var(--text2)'}; border: 1px solid ${isOpen?'rgba(0,200,83,0.3)':'rgba(96,96,112,0.3)'}">${r.status}</span>
             </div>
           </div>
@@ -794,6 +784,7 @@
     }
   };
 
+  // HIER IST DIE VERBESSERTE FUNKTION INTEGRIERT
   window.editDriver = function(id) {
     const d = allDriversCached.find(x => x.id === id);
     if(!d) return;
@@ -801,8 +792,23 @@
     let newDivision = prompt("Neue Division eingeben (1 oder 2):", d.division || "1");
     let newDiscord = prompt("Neuen Discordnamen eingeben:", d.discordName);
     let newNum = prompt("Neue Fahrernummer eingeben:", d.driverNumber);
+    
     if(newName !== null && newDivision !== null && newDiscord !== null && newNum !== null) {
-      updateDoc(doc(db, "fahrer", id), { realName: newName.trim(), division: newDivision.trim(), discordName: newDiscord.trim(), driverNumber: parseInt(newNum) });
+      let updatedData = { 
+        realName: newName.trim(), 
+        division: newDivision.trim(), 
+        discordName: newDiscord.trim(), 
+        driverNumber: parseInt(newNum) 
+      };
+
+      // Wenn die Division geändert wurde, setze das Team zurück, 
+      // da das alte Team zur falschen Division gehört.
+      if (newDivision.trim() !== (d.division || "1")) {
+        updatedData.teamId = ""; 
+        alert("Hinweis: Da die Division geändert wurde, wurde das Team des Fahrers zurückgesetzt. Bitte weise ihm ein neues Team zu.");
+      }
+
+      updateDoc(doc(db, "fahrer", id), updatedData);
     }
   };
 
@@ -835,7 +841,10 @@
     document.getElementById("table-requests").innerHTML = pending.map(d => `
       <tr>
         <td>${d.realName}</td><td>Division ${d.division || '1'}</td><td>${d.discordName}</td><td>#${d.driverNumber}</td><td>${localTeamsMap[d.teamId]?.name || d.teamId}</td>
-        <td class="actions-cell"><button class="btn btn-green btn-sm" onclick="approveLicense('${d.id}')">Zulassen</button></td>
+        <td class="actions-cell">
+          <button class="btn btn-green btn-sm" onclick="approveLicense('${d.id}')">Zulassen</button>
+          <button class="btn btn-red btn-sm" onclick="deleteGlobalDoc('fahrer', '${d.id}')">Ablehnen</button>
+        </td>
       </tr>
     `).join('');
 
